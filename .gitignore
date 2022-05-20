@@ -1,0 +1,10 @@
+*.fasta*
+*.fa*
+*.fsa*
+*.fastq*
+*.fq*
+*.fna*
+test/
+
+
+__pycache__/
