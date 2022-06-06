@@ -93,9 +93,9 @@ def structural_variant_subparser(subparsers):
                                 help='Fragment length distribution (mean,stdev) (default: %(default)s)')
     
     nanovar_args = group.add_argument_group('Variant Call')
-    nanovar_args.add_argument("--mincov", type=int, default=2,
+    nanovar_args.add_argument("--mincov_sv", type=int, default=2,
                                 help='Minimum number of reads required to call variant (default: %(default)i)')
-    nanovar_args.add_argument("--minlen", type=int, default=25,
+    nanovar_args.add_argument("--minlen_sv", type=int, default=25,
                                 help='Minimum length of SV to be detected (default: %(default)i)')
     
     other_args = group.add_argument_group('Other')
@@ -203,9 +203,9 @@ def check_structural_variant_args(args):
         sys.exit("At least one input must be specified. Must use long-read FASTQ (-l) or genomic FASTA (-g).")
     if args.long is not None and args.genome is not None:
         sys.exit("Only one input can be specified. Can't use FASTQ (-l) and FASTA (-g) together.")
-    if args.mincov < 1:
+    if args.mincov_sv < 1:
         sys.exit(f'Error: minimum coverage must be over 1')
-    if args.minlen < 1:
+    if args.minlen_sv < 1:
         sys.exit('Error: minimum length of SV must be over 1')
     
     try:

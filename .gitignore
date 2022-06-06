@@ -5,6 +5,6 @@
 *.fq*
 *.fna*
 test/
-
+tmp/
 
 __pycache__/
