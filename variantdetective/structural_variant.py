@@ -1,16 +1,7 @@
 import os
 import sys
-from subprocess import Popen, PIPE, STDOUT
 
-from .tools import get_new_filename
-
-def run_process(command, error_message):
-    process = Popen([command],
-                    universal_newlines=True, stdout=PIPE, stderr=STDOUT, shell=True, executable='/bin/bash')
-    exitcode = process.wait()
-    if exitcode != 0:
-        raise Exception(error_message)
-    
+from .tools import get_new_filename, run_process
 
 def structural_variant(args, input_reads, output=sys.stderr):
     print('Running structural_variant tool...', file=output)
@@ -105,7 +96,7 @@ def structural_variant(args, input_reads, output=sys.stderr):
     command = 'ls ' + nanovar_outdir + '/*pass.vcf ' + \
             cutesv_outdir + '/variants.vcf ' + \
             nanosv_outdir + '/variants.vcf ' + \
-            svim_outdir + '/variants_15.vcf > ' + \
+            svim_outdir + '/variants.filt.vcf > ' + \
             structural_variant_outdir + '/vcf_list'
     run_process(command, "Error: couldn't find VCF files")
 

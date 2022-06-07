@@ -1,6 +1,7 @@
 import gzip
 import os
 import statistics
+from subprocess import Popen, PIPE, STDOUT
 
 def get_fasta_info(open_func, file):
     count = 0 
@@ -56,3 +57,11 @@ def get_open_function(file_extension):
     else:
         open_func = open
     return open_func
+
+def run_process(command, error_message):
+    process = Popen([command],
+                    universal_newlines=True, stdout=PIPE, stderr=STDOUT, shell=True, executable='/bin/bash')
+    exitcode = process.wait()
+    if exitcode != 0:
+        raise Exception(error_message)
+    
