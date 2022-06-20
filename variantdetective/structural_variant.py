@@ -67,7 +67,7 @@ def structural_variant(args, input_reads, output=sys.stderr):
     # Run SVIM
     print('Running SVIM...', file=output)
     command = 'svim alignment ' + svim_outdir + ' ' + \
-            structural_variant_outdir + '/alignment.mm.sorted.bam ' + \
+            structural_varistructural_variantant_outdir + '/alignment.mm.sorted.bam ' + \
             reference + \
             ' --min_sv_size ' + str(args.minlen_sv)
     print(command, file=output)
