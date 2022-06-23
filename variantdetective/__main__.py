@@ -14,26 +14,19 @@ def main(output=sys.stderr):
 
     if args.subparser_name == 'structural_variant':
         check_structural_variant_args(args)
-        create_outdir(args)
-        copy_inputs(args)
-        validate_inputs(args, output=output)
     
     elif args.subparser_name == 'snp_indel':
-        #check_snp_indel_args(args)
-        #from .snp_indel import snp_indel
-        #snp_indel(args, output=output)
-        print('snp_indel')
-
+        check_snp_indel_args(args)
+    
     elif args.subparser_name == 'all_variants':
         check_all_variants_args(args)
-        create_outdir(args)
-        copy_inputs(args)
-        #from .all_variants import all_variants
-        #all_variants(args, output=output)
-        validate_inputs(args, output=output)
+
+    create_outdir(args)
+    copy_inputs(args)
+    validate_inputs(args, output=output)    
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(description='VariantFinder: Identify single nucleotide variants (SNV), '
+    parser = argparse.ArgumentParser(description='VariantDetective: Identify single nucleotide variants (SNV), '
                                         'insertions/deletions (indel) and/or structural variants (SV) from '
                                         'FASTQ reads or FASTA genomic sequences.',
                       formatter_class=NoSubparsersMetavarFormatter,
@@ -44,13 +37,14 @@ def parse_args(args):
                            default=argparse.SUPPRESS,
                            help='Show this help message and exit')
     help_args.add_argument('-v', '--version', action='version',
-                           version='VariantFinder v' + __version__,
+                           version='VariantDetective v' + __version__,
                            help="Show program version number and exit")
 
     subparsers = parser.add_subparsers(title='Commands', dest='subparser_name',
                                        metavar=None)
-    structural_variant_subparser(subparsers)
     all_variants_subparser(subparsers)
+    structural_variant_subparser(subparsers)
+    snp_indel_subparser(subparsers)
 
 
 
@@ -64,7 +58,8 @@ def parse_args(args):
 
 
 def structural_variant_subparser(subparsers):
-    help = 'Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).'
+    help = 'Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA). \
+                 If input is FASTA, long reads will be simulated to detect SVs.'
     definition = 'Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA). \
                  If input is FASTA, long reads will be simulated to detect SVs.'
 
@@ -77,7 +72,7 @@ def structural_variant_subparser(subparsers):
     help_args.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                             help='Show this help message and exit')
     help_args.add_argument('-v', '--version', action='version',
-                            version='VariantFinder v' + __version__,
+                            version='V v' + __version__,
                             help="Show program version number and exit")
 
     input_args = group.add_argument_group('Input')
@@ -122,7 +117,7 @@ def all_variants_subparser(subparsers):
     help_args.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                             help='Show this help message and exit')
     help_args.add_argument('-v', '--version', action='version',
-                            version='VariantFinder v' + __version__,
+                            version='VariantDetective v' + __version__,
                             help="Show program version number and exit")
 
     input_args = group.add_argument_group('Input')
@@ -165,7 +160,7 @@ def snp_indel_subparser(subparsers):
     definition = 'Identify SNPs/indels from short reads (FASTQ). \
         If genome sequence (FASTA) is provided instead, simulate reads and predict  SNPs and indels.'
 
-    group = subparsers.add_parser('all_variants', description=definition,
+    group = subparsers.add_parser('snp_indel', description=definition,
                                   help=help, 
                                   formatter_class=argparse.HelpFormatter,
                                   add_help=False)
@@ -174,18 +169,16 @@ def snp_indel_subparser(subparsers):
     help_args.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                             help='Show this help message and exit')
     help_args.add_argument('-v', '--version', action='version',
-                            version='VariantFinder v' + __version__,
+                            version='VariantDetective v' + __version__,
                             help="Show program version number and exit")
 
     input_args = group.add_argument_group('Input')
-    input_args.add_argument('-l', '--long', type=str, metavar='[FASTQ]',
-                               help="Path to long reads FASTQ file. Must be combined with -1 and -2")
     input_args.add_argument('-1', '--short1', type=str, metavar='[FASTQ]',
-                               help="Path to pair 1 of short reads FASTQ file. Must be combined with -l and -2")
+                               help="Path to pair 1 of short reads FASTQ file. Must be combined with -2")
     input_args.add_argument('-2', '--short2', type=str, metavar='[FASTQ]',
-                               help="Path to pair 2 of short reads FASTQ file. Must be combined with -l and -1")
+                               help="Path to pair 2 of short reads FASTQ file. Must be combined with -1")
     input_args.add_argument('-g', '--genome', type=str, metavar='[FASTA]',
-                               help="Path to query genomic FASTA file. Can't be combined with -l, -1 or -2")
+                               help="Path to query genomic FASTA file. Can't be combined with -1 or -2")
     input_args.add_argument('-r', '--reference', type=str, required=True, metavar='[FASTA]',
                                help='Path to reference genome in FASTA. Required')
 
@@ -194,12 +187,6 @@ def snp_indel_subparser(subparsers):
                                 help='Either an absolute value (e.g. 250M) or a relative depth (e.g. 50x) (default: %(default)s)')
     simulate_args.add_argument("--readlen", type=str, default='15000,13000',
                                 help='Fragment length distribution (mean,stdev) (default: %(default)s)')
-    
-    nanovar_args = group.add_argument_group('Structural Variant Call')
-    nanovar_args.add_argument("--mincov_sv", type=int, default=2,
-                                help='Minimum number of reads required to call SV (default: %(default)i)')
-    nanovar_args.add_argument("--minlen_sv", type=int, default=25,
-                                help='Minimum length of SV to be detected (default: %(default)i)')
     
     snp_args = group.add_argument_group('SNP/Indel Call')
     snp_args.add_argument("--mincov_snp", type=int, default=2,
@@ -297,7 +284,7 @@ def check_snp_indel_args(args):
 
 def check_python_version():
     if sys.version_info.major < 3 or sys.version_info.minor < 6:
-        sys.exit('Error: VariantFinder requires Python 3.6 or later')
+        sys.exit('Error: VariantDetective requires Python 3.6 or later')
 
 def copy_inputs(args):
     shutil.copyfile(args.reference, get_new_filename(args.reference, args.out))

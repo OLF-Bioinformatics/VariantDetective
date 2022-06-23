@@ -31,7 +31,6 @@ def structural_variant(args, input_reads, output=sys.stderr):
             nanovar_outdir + \
             ' -c ' + str(args.mincov_sv) + \
             ' -l ' + str(args.minlen_sv)
-    print(command, file=output)
     run_process(command, "Error: NanoVar failed")
     
     # Sort bam file
@@ -61,16 +60,14 @@ def structural_variant(args, input_reads, output=sys.stderr):
             ' -s samtools' + \
             ' -b ' + nanosv_outdir + '/reference.bed ' + \
             structural_variant_outdir + '/alignment.mm.sorted.bam' 
-    print(command, file=output)
     run_process(command, "Error: NanoSV failed")
     
     # Run SVIM
     print('Running SVIM...', file=output)
     command = 'svim alignment ' + svim_outdir + ' ' + \
-            structural_varistructural_variantant_outdir + '/alignment.mm.sorted.bam ' + \
+            structural_variant_outdir + '/alignment.mm.sorted.bam ' + \
             reference + \
             ' --min_sv_size ' + str(args.minlen_sv)
-    print(command, file=output)
     run_process(command, "Error: SVIM failed")
     
     command = "bcftools view -i 'QUAL >= 15' " + \
@@ -88,7 +85,6 @@ def structural_variant(args, input_reads, output=sys.stderr):
             ' -s ' + str(args.mincov_sv) + \
             ' -l ' + str(args.minlen_sv) + \
             ' -L -1'  
-    print(command, file=output)
     run_process(command, "Error: CuteSV failed")
 
     # Run SURVIVOR
@@ -103,5 +99,6 @@ def structural_variant(args, input_reads, output=sys.stderr):
     command = 'SURVIVOR merge ' + structural_variant_outdir + \
             '/vcf_list 1000 2 1 1 0 ' + str(args.minlen_sv) + ' ' \
             + structural_variant_outdir + '/combined_sv_variants.vcf'
-    print(command, file=output)
     run_process(command, "Error: SURVIVOR failed")
+
+    return structural_variant_outdir + '/alignment.mm.sorted.bam'

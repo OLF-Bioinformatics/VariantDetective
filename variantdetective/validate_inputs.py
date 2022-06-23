@@ -2,6 +2,7 @@ import os
 import sys
 
 from .simulate import simulate
+from .snp_indel import snp_indel
 from .structural_variant import structural_variant
 from .tools import get_fasta_info, get_fastq_info, get_input_type, get_new_filename, get_open_function
 
@@ -9,15 +10,15 @@ def validate_inputs(args, output=sys.stderr):
     print('Validating input files...', file=output)
     input_file_type = []
     actual_file_type = []
-
-    if 'long' in args and args.long is not None:
-        long_file = get_new_filename(args.long, args.out)
-        input_file_type.append("Long-read FASTQ")
-        actual_file_type.append(check_input(long_file, output))
+   
     if 'genome' in args and args.genome is not None:
         genome_file = get_new_filename(args.genome, args.out)
         input_file_type.append("Genomic FASTA")
         actual_file_type.append(check_input(genome_file, output))
+    if 'long' in args and args.long is not None:
+        long_file = get_new_filename(args.long, args.out)
+        input_file_type.append("Long-read FASTQ")
+        actual_file_type.append(check_input(long_file, output))
     if 'short1' in args and args.short1 is not None:
         short1_file = get_new_filename(args.short1, args.out)
         input_file_type.append("Short-read FASTQ")
@@ -31,12 +32,29 @@ def validate_inputs(args, output=sys.stderr):
     if input_file_type == actual_file_type:
         if 'Genomic FASTA' in input_file_type:
             print('Running genome pipeline')
+            sim_file = simulate(args, genome_file, output=sys.stderr)
+            if args.subparser_name == "structrual_variant":
+                long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
+            if args.subparser_name == "snp_indel":
+                ##### ADD MAPPING STEP #####
+                snp_indel(args, long_bam_file, output=sys.stderr)
+            if args.subparser_name == "all_variants":
+                long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
+                snp_indel(args, long_bam_file, output=sys.stderr)
+
         elif 'Long-read FASTQ' in input_file_type and 'Short-read FASTQ' in input_file_type:
             print('Running short and long read pipeline')
+            short_inputs = [short1_file, short2_file]
+            #long_bam_file = structural_variant(args, long_file, output=sys.stderr)
+            snp_indel(args, short_inputs, output=sys.stderr)
         elif 'Long-read FASTQ' in input_file_type:
             print('Running long read pipeline')
+            #long_bam_file = structural_variant(args, long_file, output=sys.stderr)
         elif 'Short-read FASTQ' in input_file_type:
             print('Running short read pipeline')
+            short_inputs = [short1_file, short2_file]
+            snp_indel(args, short_inputs, output=sys.stderr)
+
 
     else:
         for i in range(len(input_file_type)):
