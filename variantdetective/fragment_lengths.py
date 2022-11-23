@@ -33,21 +33,21 @@ class FragmentLengths(object):
     def __init__(self, mean, stdev, output=sys.stderr):
         self.mean = mean
         self.stdev = stdev
-        print('', file=output)
+        #print('', file=output)
         if self.stdev == 0:
             self.gamma_k, self.gamma_t = None, None
-            print(f'Using a constant fragment length of {mean} bp', file=output)
+            #print(f'Using a constant fragment length of {mean} bp', file=output)
         else:  # gamma distribution
-            print('Generating fragment lengths from a gamma distribution:', file=output)
+            #print('Generating fragment lengths from a gamma distribution:', file=output)
             gamma_a, gamma_b, self.gamma_k, self.gamma_t = gamma_parameters(mean, stdev)
             n50 = int(round(find_n_value(gamma_a, gamma_b, 50)))
-            print_in_two_columns(f'  mean  = {float_to_str(mean):>6} bp',
-                                 f'  stdev = {float_to_str(stdev):>6} bp',
-                                 f'  N50   = {n50:>6} bp',
-                                 'parameters:',
-                                 f'  k (shape)     = {self.gamma_k:.4e}',
-                                 f'  theta (scale) = {self.gamma_t:.4e}',
-                                 output=output)
+            #print_in_two_columns(f'  mean  = {float_to_str(mean):>6} bp',
+            #                     f'  stdev = {float_to_str(stdev):>6} bp',
+            #                     f'  N50   = {n50:>6} bp',
+            #                     'parameters:',
+            #                     f'  k (shape)     = {self.gamma_k:.4e}',
+            #                     f'  theta (scale) = {self.gamma_t:.4e}',
+            #                     output=output)
 
     def get_fragment_length(self):
         if self.stdev == 0:

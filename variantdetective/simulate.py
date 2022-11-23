@@ -39,7 +39,7 @@ def simulate(args, input_fasta, output=sys.stderr):
     else:
         output_name = split_path[0] + ".fastq"
     
-    print_intro(output)
+    print(f'Simulating long-reads from genomic sequence...', end=' ', file=output)
     ref_seqs, ref_depths, ref_circular = load_reference(input_fasta, output)
     rev_comp_ref_seqs = {name: reverse_complement(seq) for name, seq in ref_seqs.items()}
     frag_lengths = FragmentLengths(args.mean_frag_length, args.frag_length_stdev, output)
@@ -49,10 +49,10 @@ def simulate(args, input_fasta, output=sys.stderr):
     target_size = get_target_size(ref_size, args.readcov)
     #process_size = target_size / args.threads
     process_size = target_size 
-    print('', file=output)
-    print(f'Target read set size: {target_size:,} bp', file=output)
-    print(f'Number of threads: {args.threads}', file=output)
-    print('', file=output)
+    #print('', file=output)
+    #print(f'Target read set size: {target_size:,} bp', file=output)
+    #print(f'Number of threads: {args.threads}', file=output)
+    #print('', file=output)
    
     output_file = open(output_name, 'w')
 
@@ -68,6 +68,7 @@ def simulate(args, input_fasta, output=sys.stderr):
         process.join()
 
     output_file.close()
+    print('Complete', file=output)
     return output_name
 
 def generate_reads(target_size, frag_lengths, ref_seqs, rev_comp_ref_seqs,
@@ -210,30 +211,30 @@ def get_target_size(ref_size, coverage):
              '(e.g. 25x)')
 
 def load_reference(reference, output):
-    print('', file=output)
-    print(f'Loading reference from {reference}', file=output)
+    #print('', file=output)
+    #print(f'Loading reference from {reference}', file=output)
     ref_seqs, ref_depths, ref_circular = load_fasta(reference)
     plural = '' if len(ref_seqs) == 1 else 's'
-    print(f'  {len(ref_seqs):,} contig{plural}:', file=output)
+    #print(f'  {len(ref_seqs):,} contig{plural}:', file=output)
     for contig in ref_seqs:
         circular_linear = 'circular' if ref_circular[contig] else 'linear'
-        print(f'    {contig}: {len(ref_seqs[contig]):,} bp, {circular_linear}, '
-              f'{ref_depths[contig]:.2f}x depth', file=output)
+        #print(f'    {contig}: {len(ref_seqs[contig]):,} bp, {circular_linear}, '
+        #      f'{ref_depths[contig]:.2f}x depth', file=output)
     if len(ref_seqs) > 1:
         total_size = sum(len(s) for s in ref_seqs.values())
-        print(f'  total size: {total_size:,} bp', file=output)
+        #print(f'  total size: {total_size:,} bp', file=output)
     return ref_seqs, ref_depths, ref_circular
 
 def print_intro(output):
     #print('', file=output)
     #print(f'LongReadGenerator v{__version__}', file=output)
     #print(f'Generate fake long reads from genomic sequence', file=output)
-    print(f'Simulating long-reads from genomic sequence...', file=output)
-
+    print(f'Simulating long-reads from genomic sequence...', end=' ', file=output)
+    
 def print_progress(count, bp, target, output):
     plural = ' ' if count == 1 else 's'
     percent = int(1000.0 * bp / target) / 10
     if percent > 100.0:
         percent = 100.0
-    print(f'\rSimulating: {count:,} read{plural}  {bp:,} bp  {percent:.1f}%',
-          file=output, flush=True, end='')
+    #print(f'\rSimulating: {count:,} read{plural}  {bp:,} bp  {percent:.1f}%',
+    #      file=output, flush=True, end='')

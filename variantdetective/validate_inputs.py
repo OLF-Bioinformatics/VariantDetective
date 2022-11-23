@@ -7,7 +7,7 @@ from .structural_variant import structural_variant
 from .tools import get_fasta_info, get_fastq_info, get_input_type, get_new_filename, get_open_function
 
 def validate_inputs(args, output=sys.stderr):
-    print('Validating input files...', file=output)
+    print('Validating input files...', end= ' ', file=output)
     input_file_type = []
     actual_file_type = []
    
@@ -28,6 +28,7 @@ def validate_inputs(args, output=sys.stderr):
         input_file_type.append("Short-read FASTQ")
         actual_file_type.append(check_input(short2_file, output))
     
+    print('Complete', file=output)
 
     if input_file_type == actual_file_type:
         if 'Genomic FASTA' in input_file_type:
@@ -36,7 +37,6 @@ def validate_inputs(args, output=sys.stderr):
             if args.subparser_name == "structrual_variant":
                 long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
             if args.subparser_name == "snp_indel":
-                ##### ADD MAPPING STEP #####
                 snp_indel(args, long_bam_file, output=sys.stderr)
             if args.subparser_name == "all_variants":
                 long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
@@ -45,16 +45,15 @@ def validate_inputs(args, output=sys.stderr):
         elif 'Long-read FASTQ' in input_file_type and 'Short-read FASTQ' in input_file_type:
             print('Running short and long read pipeline')
             short_inputs = [short1_file, short2_file]
-            #long_bam_file = structural_variant(args, long_file, output=sys.stderr)
+            long_bam_file = structural_variant(args, long_file, output=sys.stderr)
             snp_indel(args, short_inputs, output=sys.stderr)
         elif 'Long-read FASTQ' in input_file_type:
             print('Running long read pipeline')
-            #long_bam_file = structural_variant(args, long_file, output=sys.stderr)
+            long_bam_file = structural_variant(args, long_file, output=sys.stderr)
         elif 'Short-read FASTQ' in input_file_type:
             print('Running short read pipeline')
             short_inputs = [short1_file, short2_file]
             snp_indel(args, short_inputs, output=sys.stderr)
-
 
     else:
         for i in range(len(input_file_type)):
@@ -76,6 +75,8 @@ def validate_inputs(args, output=sys.stderr):
 
             message = message + ' Please verify inputs or use appropriate tool and parameters.'
             raise Exception(message)
+
+    
     '''
     for i in range(len(input_file_type)):
         if input_file_type[i] == actual_file_type[i]:
