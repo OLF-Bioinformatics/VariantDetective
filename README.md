@@ -93,7 +93,7 @@ Help:
   -v, --version         Show program version number and exit
 ```
 
-### Tool - structural_variant
+### structural_variant
 
 ```
 usage: variantdetective-runner.py structural_variant -r FASTA [-l FASTQ] [-g FASTA]                            
@@ -134,7 +134,7 @@ Help:
   -v, --version         Show program version number and exit
 ```
 
-### Tool - snp_indel
+### snp_indel
 
 ```
 usage: variantdetective-runner.py structural_variant -r FASTA [-1 FASTQ] [-2 FASTQ] [-g FASTA]                                                    
