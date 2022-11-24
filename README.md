@@ -11,9 +11,9 @@ This tool makes use of other open-source variant callers and creates consensus s
   - [Quick Usage](#quick-usage)
   - [List of Commands](#list-of-commands)
   - [Detailed usage](#detailed-usage)
-     - [all_variants](#allvariants)
-     - [structural_variant](#structuralvariant)
-     - [snp_indel](#snpindel)
+     - [all_variants](#all_variants)
+     - [structural_variant](#structural_variant)
+     - [snp_indel](#snp_indel)
   - [Reporting Issues](#reporting-issues)
   - [Citing VariantDetective](#citing-variantdetective)
 
