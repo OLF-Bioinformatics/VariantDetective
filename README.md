@@ -31,8 +31,8 @@ MUST ADD QUICK USAGE
 ## List of Commands
 
 - <b>[all_variants](#all_variants):</b> Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels.
-- <b>[structural_variant](structural_variant):</b> Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs.
-- <b>[snp_indel](snp_indel):</b> Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels.
+- <b>[structural_variant](#structural_variant):</b> Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs.
+- <b>[snp_indel](#snp_indel):</b> Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels.
 
 ## Detailed Usage
 
