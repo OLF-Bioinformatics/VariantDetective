@@ -1,4 +1,4 @@
-<p align='center'><img src='images/logo.png' alt="VariantDetective"></p>
+<p align='center'><img src='images/logo.png' alt="VariantDetective" width="75%"></p>
 
 This program is designed to identify short variants and structural variants. Variants can be identified from genomic sequences (FASTA) or from combinations of short and/or long reads (FASTQ). If genomic sequences are provided as input, long reads will be simulated to detect variants.
 
