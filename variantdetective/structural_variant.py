@@ -155,6 +155,9 @@ def structural_variant(args, input_reads, output=sys.stderr):
     run_process(command, "Error: SURVIVOR failed")
 
     generate_tab_csv_summary(read_vcf(structural_variant_outdir + '/combined_sv.vcf'), structural_variant_outdir)
+    command = 'rm ' + structural_variant_outdir + '/vcf_list'
+    run_process(command, "Error: Issue removing vcf_list")
+    
     print('Complete', file=output)
 
     return structural_variant_outdir + '/alignment.mm.sorted.bam'

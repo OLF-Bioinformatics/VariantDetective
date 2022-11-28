@@ -7,7 +7,7 @@ from .structural_variant import structural_variant
 from .tools import get_fasta_info, get_fastq_info, get_input_type, get_new_filename, get_open_function
 
 def validate_inputs(args, output=sys.stderr):
-    print('Validating input files...', end= ' ', file=output)
+    #print('Validating input files...', end= ' ', file=output)
     input_file_type = []
     actual_file_type = []
    

@@ -10,10 +10,13 @@ This tool makes use of other open-source variant callers and creates consensus s
      - [Conda Installation](#conda-installation)
   - [Quick Usage](#quick-usage)
   - [List of Commands](#list-of-commands)
-  - [Detailed usage](#detailed-usage)
-     - [all_variants](#all_variants)
-     - [structural_variant](#structural_variant)
-     - [snp_indel](#snp_indel)
+  - [Variant Callers](#variant-callers)
+     - [Short Variant Callers](#short-variant-callers)
+     - [Structural Variant Callers](#structural-variant-callers)
+  - [Parameters](#parameters)
+  - [Outputs](#outputs)
+     - [Output files - snp_indel directory](#output-files---snp_indel-directory)
+     - [Output files - structural_variant directory](#output-files---structural_variant-directory)  
   - [Reporting Issues](#reporting-issues)
   - [Citing VariantDetective](#citing-variantdetective)
 
@@ -29,155 +32,90 @@ ADD INSTALLATION FROM SOURCE
 MUST ADD QUICK USAGE
 
 ## List of Commands
+| Command | Description |
+| --- | --- |
+| `variantdetective-runner.py all_variants` | Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels. |
+| `variantdetective-runner.py structural_variant` | Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs. |
+| `variantdetective-runner.py snp_indel` |  Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
 
-- <b>[all_variants](#all_variants):</b> Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels.
-- <b>[structural_variant](#structural_variant):</b> Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs.
-- <b>[snp_indel](#snp_indel):</b> Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels.
+## Variant Callers
+VariantDetective makes use of published open-source variant callers and creates consensus sets (support from at least 2 callers) in order to validate a variant.
 
-## Detailed Usage
+### Short Variant Callers
+- [Clair3](https://github.com/HKU-BAL/Clair3)
+- [Freebayes](https://github.com/freebayes/freebayes)
+- [GATK4 HapllotypeCaller](https://github.com/broadinstitute/gatk)
 
-### all_variants
+Intersections of VCF files were created using the [VCFtools](https://github.com/vcftools) `vcf-isec` tool. The final VCF output consensus file containing variants found in at least 2 variant callers was created using the [BCFtools](https://github.com/samtools/bcftools) `concat` tool.
 
-```
-usage: variantdetective-runner.py all_variants -r FASTA [-1 FASTQ] [-2 FASTQ] [-l FASTQ] [-g FASTA]                            
-                                               [--readcov READCOV] [--readlen READLEN]
-                                               [--mincov_sv MINCOV_SV] [--minlen_sv MINLEN_SV]
-                                               [--mincov_snp MINCOV_SNP] [-o OUT] [-t THREADS]
-                                               [-h] [-v] 
+### Structural Variant Callers
+- [cuteSV](https://github.com/tjiangHIT/cuteSV)
+- [NanoSV](https://github.com/mroosmalen/nanosv)
+- [NanoVar](https://github.com/cytham/nanovar)
+- [SVIM](https://github.com/eldariont/svim)
 
-Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from
-short reads (FASTQ). If genome sequence (FASTA) is provided instead, simulate
-reads and predict SV, SNPs and indels.
+The consensus VCF file was created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants were a maximum allowed distance of 1kbp between breakpoints, calls supported by at least 2 variant callers where they agree on both type and strand.  
 
-Input:
-  -r FASTA, --reference FASTA
-                        Path to reference genome in FASTA. Required
-  -1 FASTQ, --short1 FASTQ
-                        Path to pair 1 of short reads FASTQ file. Must be
-                        combined with -2 and -l
-  -2 FASTQ, --short2 FASTQ
-                        Path to pair 2 of short reads FASTQ file. Must be
-                        combined with -1 and -l
-  -l FASTQ, --long FASTQ
-                        Path to long reads FASTQ file. Must be combined with
-                        -1 and -2
-  -g FASTA, --genome FASTA
-                        Path to query genomic FASTA file. Can't be combined
-                        with -l, -1 or -2
-  
-Simulate:
-  --readcov READCOV     Either an absolute value (e.g. 250M) or a relative
-                        depth (e.g. 50x) (default: 50x)
-  --readlen READLEN     Fragment length distribution (mean,stdev) (default:
-                        15000,13000)
+## Parameters
 
-Structural Variant Call:
-  --mincov_sv MINCOV_SV
-                        Minimum number of reads required to call SV (default:
-                        2)
-  --minlen_sv MINLEN_SV
-                        Minimum length of SV to be detected (default: 25)
+All input files can be uncompressed (.fasta/.fastq) or gzipped (.fastq.gz/.fastq.gz)
 
-SNP/Indel Call:
-  --mincov_snp MINCOV_SNP
-                        Minimum number of reads required to call SNP/Indel
-                        (default: 2)
+| Options | Available Command | Description | Default | 
+| --- | :---: | --- | :---: |
+| `-r FASTA` | `all_variants`<br>`structural_variant`<br>`snp_indel` | Path to reference genome in FASTA. Required | - |
+| `-g FASTA` |  `all_variants`<br>`structural_variant`<br>`snp_indel` | Path to query genomic FASTA file. Can't be combined with `-1`, `-2` or `-l`| - |
+| `-1 FASTQ`<br>`--short1 FASTQ` | `all_variants`<br>`snp_indel` | Path to pair 1 of short reads FASTQ file. Must always be combined with `-2`. If running `all_variants`, must be combined with `-l`| - |
+| `-2 FASTQ`<br>`--short2 FASTQ` | `all_variants`<br>`snp_indel` | Path to pair 2 of short reads FASTQ file. Must always be combined with `-1`. If running `all_variants`, must be combined with `-l`| - |
+| `-l FASTQ`<br>`--long FASTQ` | `all_variants`<br>`structural_variant` | Path to long reads FASTQ file. If running `all_variants`, must be combined with `-1` and `-2`| - |
+| `--readcov READCOV` |  `all_variants`<br>`structural_variant`<br>`snp_indel` | If using `-g` as input, define the absolute amount of simulated reads (e.g. 250M) or relative simulated read depth (e.g. 50x) | `50x` | 
+| `--readlen MEAN,STDEV` |  `all_variants`<br>`structural_variant`<br>`snp_indel` | If using `-g` as input, define the mean length and standard deviation of simulated reads | `15000,13000` |
+| `--mincov_snp MINCOV_SNP` |  `all_variants`<br>`snp_indel` | Minimum number of reads required to call SNP/Indel | `2` |
+| `--mincov_sv MINCOV_SV` | `all_variants`<br>`structural_variant` | Minimum number of reads required to call SV  | `2` |
+| `--minlen_sv MINLEN_SV` | `all_variants`<br>`structural_variant` | Minimum length of SV to be detected | `25` |
+| `-o OUT`<br>`--out OUT` | `all_variants`<br>`structural_variant`<br>`snp_indel` |  Output directory. Will be created if it does not exist | `./` |
+| `-t THREADS` <br> `--threads THREADS` | `all_variants` <br> `structural_variant` <br> `snp_indel` | Number of threads used for job | `1` |
+| `-h` <br> `--help` | `all_variants`<br>`structural_variant`<br>`snp_indel` | Show help message and exit | - |
+| `-v` <br> `--version` |  `all_variants`<br>`structural_variant`<br>`snp_indel`| Show program version number and exit | - |
 
-Other:
-  -o OUT, --out OUT     Output directory. Will be created if it does not exist
-  -t THREADS, --threads THREADS
-                        Number of threads used for job (default: 1)
+## Outputs
 
-Help:
-  -h, --help            Show this help message and exit
-  -v, --version         Show program version number and exit
-```
+All input files will be copied to the output folder. Within the output folder, directories containing the `structural_variant` and `snp_indel` results will be created.
 
-### structural_variant
+### Output files - `snp_indel` directory
 
-```
-usage: variantdetective-runner.py structural_variant -r FASTA [-l FASTQ] [-g FASTA]                            
-                                               [--readcov READCOV] [--readlen READLEN]
-                                               [--mincov_sv MINCOV_SV] [--minlen_sv MINLEN_SV]
-                                               [-o OUT] [-t THREADS] [-h] [-v] 
+| Output |  Description |
+|---:|---|
+| `snp_final.vcf` | Variants that were found in at least 2 variant callers in VCF format |
+| `snp_final.csv` | Variants that were found in at least 2 variant callers in CSV format |
+| `snp_final.tab` | Variants that were found in at least 2 variant callers in TSV format |
+| `snp_final_summary.txt` | Summary of different short variant types found in snp_final files |
+| `freebayes.haplotypecaller.clair3.vcf.gz` | Variants in common between all variants callers |
+| `freebayes.clair3.vcf.gz` | Variants in common between Freebayes and Clair3 |
+| `freebayes.haplotypecaller.vcf.gz` | Variants in common between Freebayes and HaplotypeCaller |
+| `haplotypecaller.unique.vcf.gz` | Variants in common between HaplotypeCaller and Clair3 |
+| `clair3.unique.vcf.gz` | Variants only found by Clair3 |
+| `freebayes.unique.vcf.gz` | Variants only found by Freebayes |
+| `haplotypecaller.unique.vcf.gz` | Variants only found by HaplotypeCaller | 
+| `alignment.mm.rg.sorted.bam` |  Alignment in BAM format |
+| `alignment.mm.rg.sorted.bam.bai` | Index file of alignments |
+| `clair3/` | Directory containing files related to Clair3 variant calling |
+| `freebayes/` | Directory containing files related to Freebayes variant calling |
+| `haplotypecaller/` | Directory containing files related to HaplotypeCaller variant calling |
 
-Identify structural variants (SV) from long reads (FASTQ) or genome sequence
-(FASTA). If input is FASTA, long reads will be simulated to detect SVs.
+### Output files - `structural_variant` directory
 
-Input:
-  -r FASTA, --reference FASTA
-                        Path to reference genome in FASTA. Required
-  -l FASTQ, --long FASTQ
-                        Path to long reads FASTQ file. Can't be combined with
-                        -g
-  -g FASTA, --genome FASTA
-                        Path to query genomic FASTA file. Can't be combined
-                        with -l
-  
-Simulate:
-  --readcov READCOV     Either an absolute value (e.g. 250M) or a relative
-                        depth (e.g. 50x) (default: 50x)
-  --readlen READLEN     Fragment length distribution (mean,stdev) (default:
-                        15000,13000)
-
-Structural Variant Call:
-  --mincov_sv MINCOV_SVLicense
-                        Minimum length of SV to be detected (default: 25)
-
-Other:
-  -o OUT, --out OUT     Output directory. Will be created if it does not exist
-  -t THREADS, --threads THREADS
-                        Number of threads used for job (default: 1)
-
-Help:
-  -h, --help            Show this help message and exit
-  -v, --version         Show program version number and exit
-```
-
-### snp_indel
-
-```
-usage: variantdetective-runner.py structural_variant -r FASTA [-1 FASTQ] [-2 FASTQ] [-g FASTA]                                                    
-                                               [--readcov READCOV] [--readlen READLEN]
-                                               [--mincov_snp MINCOV_SNP] [-o OUT]
-                                               [-t THREADS] [-h] [-v]
-                                               
-Identify SNPs/indels from short reads (FASTQ). If genome sequence (FASTA) is
-provided instead, simulate reads and predict SNPs and indels.
-
-Input:
-  -r FASTA, --reference FASTA
-                        Path to reference genome in FASTA. Required
-  -1 [FASTQ], --short1 [FASTQ]
-                        Path to pair 1 of short reads FASTQ file. Must be
-                        combined with -2
-  -2 [FASTQ], --short2 [FASTQ]
-                        Path to pair 2 of short reads FASTQ file. Must be
-                        combined with -1
-  -g FASTA, --genome FASTA
-                        Path to query genomic FASTA file. Can't be combined
-                        with -1 or -2
-  
-Simulate:
-  --readcov READCOV     Either an absolute value (e.g. 250M) or a relative
-                        depth (e.g. 50x) (default: 50x)
-  --readlen READLEN     Fragment length distribution (mean,stdev) (default:
-                        15000,13000)
-
-SNP/Indel Call:
-  --mincov_snp MINCOV_SNP
-                        Minimum number of reads required to call SNP/Indel
-                        (default: 2)
-
-Other:
-  -o OUT, --out OUT     Output directory. Will be created if it does not exist
-  -t THREADS, --threads THREADS
-                        Number of threads used for job (default: 1)
-
-Help:
-  -h, --help            Show this help message and exit
-  -v, --version         Show program version number and exit
-```
+| Output |  Description |
+|---:|---|
+| `combined_sv.vcf` | Variants that were found in at least 2 variant callers in VCF format |
+| `combined_sv.csv` | Variants that were found in at least 2 variant callers in CSV format |
+| `combined_sv.tab` | Variants that were found in at least 2 variant callers in TSV format |
+| `combined_sv_summary.txt` | Summary of different structural variant types found in combined_sv files |
+| `alignment.mm.sorted.bam` |  Alignment in BAM format |
+| `alignment.mm.sorted.bam.bai` | Index file of alignments |
+| `cutesv/` | Directory containing files related to cuteSV variant calling |
+| `nanosv/` | Directory containing files related to NanoSV variant calling |
+| `nanovar/` | Directory containing files related to NanoVar variant calling |
+| `svim/` | Directory containing files related to SVIM variant calling |
 
 ## Reporting Issues
 

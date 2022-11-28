@@ -23,6 +23,7 @@ def main(output=sys.stderr):
 
     create_outdir(args)
     copy_inputs(args)
+    print('Validating input files...', end= ' ', file=output)
     validate_inputs(args, output=output)    
 
 def parse_args(args):
