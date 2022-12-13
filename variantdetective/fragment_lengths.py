@@ -1,5 +1,5 @@
 """
-This module contains  class for describing fragment length distributions
+This module contains a class for describing fragment length distributions
 (described by the gamma distribution) and related functions.
 
 Portions Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)

@@ -1,6 +1,6 @@
 """
-This module contains miscellaneous functions that are used in various
-components of VariantDetective.
+This file contains code for the snp_indel subcommand.
+
 
 Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
 https://github.com/philcharron-cfia/VariantDetective
