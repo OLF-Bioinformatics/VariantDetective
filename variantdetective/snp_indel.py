@@ -1,3 +1,11 @@
+"""
+This module contains miscellaneous functions that are used in various
+components of VariantDetective.
+
+Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/philcharron-cfia/VariantDetective
+"""
+
 import os
 import sys
 import io

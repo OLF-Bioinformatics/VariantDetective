@@ -1,3 +1,11 @@
+"""
+This file contains code needed to validate the inputs used
+to ensure they are in the right format for VariantDetective.
+
+Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/philcharron-cfia/VariantDetective
+"""
+
 import os
 import sys
 
@@ -75,48 +83,6 @@ def validate_inputs(args, output=sys.stderr):
 
             message = message + ' Please verify inputs or use appropriate tool and parameters.'
             raise Exception(message)
-
-    
-    '''
-    for i in range(len(input_file_type)):
-        if input_file_type[i] == actual_file_type[i]:
-            if actual_file_type[i] == "Genomic FASTA":
-                #sim_file = simulate(args, genome_file, output=sys.stderr)
-                #structural_variant(args, sim_file, output=sys.stderr)
-                print('Running genome pipeline')
-            elif actual_file_type[i] == "Long-read FASTQ":
-                for j in range(len(input_file_type)):
-                    if actual_file_type[j] != "Short-read FASTQ":
-                        print('Running long read pipeline')
-                        #structural_variant(args, long_file, output=sys.stderr)
-                        break
-                    else:
-                        print('Running short and long read pipeline')
-                        break
-                        
-            elif actual_file_type[i] == "Short-read FASTQ":
-                print('Running short read pipeline')
-                #print('Running snp_indel tool...', file=output)
-        else:
-            if input_file_type[i] == "Long-read FASTQ":
-                if actual_file_type[i] == "Genomic FASTA":
-                    message = 'Input file was supposed to be long-read FASTQ but genomic FASTA was detected.'
-                elif actual_file_type[i] == "Short-read FASTQ":
-                    messastructural_variant = 'Input file was supposed to be long-read FASTQ but short-read FASTQ was detected.'
-            elif input_file_type[i] == "Genomic FASTA":
-                if actual_file_type[i] == "Long-read FASTQ":
-                    message = 'Input file was supposed to be genomic FASTA but long-read FASTQ was detected.'
-                elif actual_file_type[i] == "Short-read FASTQ":
-                    message = 'Input file was supposed to be genomic FASTA but short-read FASTQ was detected.'
-            elif input_file_type[i] == "Short-read FASTQ":
-                if actual_file_type[i] == "Long-read FASTQ":
-                    message = 'Input file was supposed to be short-read FASTQ but long-read FASTQ was detected.'
-                elif actual_file_type[i] == "Genomic FASTA":
-                    message = 'Input file was supposed to be short-read FASTQ but genomic FASTA was detected.'
-
-            message = message + ' Please verify inputs or use appropriate tool and parameters.'
-            raise Exception(message)
-'''
 
 def check_input(file, output=sys.stderr):
     file_extension = os.path.splitext(file)

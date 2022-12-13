@@ -1,25 +1,11 @@
 """
-This module contains miscellaneous functions that are used in various
-components of LongReadGenerator.
+This file contains functions that are used in the long read simulation
+component of VariantDetective.
 
 Portions Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
-https://github.com/philcharron-cfia/LongReadGenerator
+https://github.com/philcharron-cfia/VariantDetective
 Portions Copyright (C) 2018 Ryan Wick (rrwick@gmail.com)
 https://github.com/rrwick/Badread
-
-This file is part of LongReadGenerator.
-
-LongReadGenerator is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any
-later version.
-
-LongReadGenerator is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-LongReadGenerator. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import collections

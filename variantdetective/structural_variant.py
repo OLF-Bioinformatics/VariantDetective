@@ -1,3 +1,10 @@
+"""
+This file contains code for the structural_variant subcommand.
+
+Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/philcharron-cfia/VariantDetective
+"""
+
 import os
 import sys
 import io

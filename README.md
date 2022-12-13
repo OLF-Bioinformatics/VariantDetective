@@ -56,6 +56,9 @@ Intersections of VCF files were created using the [VCFtools](https://github.com/
 
 The consensus VCF file was created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants were a maximum allowed distance of 1kbp between breakpoints, calls supported by at least 2 variant callers where they agree on both type and strand.  
 
+## Long Read Simulator
+When a genomic FASSTA file is provided as query input, long reads are simulated in order to detect variants. The long read simulation tool is adapted from [Badread](https://github.com/rrwick/Badread), a tool that creates simulated reads. It has been modified to create perfectly matching reads to the reference file and to allow multi-threading to speed up the process.
+
 ## Parameters
 
 All input files can be uncompressed (.fasta/.fastq) or gzipped (.fastq.gz/.fastq.gz)

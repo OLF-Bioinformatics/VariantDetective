@@ -1,3 +1,11 @@
+"""
+This file contains the main (entry-point) function into VariantDetective.
+It can be run using the variantdetective.py script. 
+
+Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/philcharron-cfia/VariantDetective
+"""
+
 import argparse
 import os
 import pathlib
@@ -347,5 +355,5 @@ class NoSubparsersMetavarFormatter(argparse.HelpFormatter):
         else:
             yield from super()._iter_indented_subactions(action)
 
-if __name__ == '__main__':
+if __name__ == 'main':
     main()
