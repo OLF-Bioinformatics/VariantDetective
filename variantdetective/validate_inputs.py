@@ -22,19 +22,23 @@ def validate_inputs(args, output=sys.stderr):
     if 'genome' in args and args.genome is not None:
         genome_file = get_new_filename(args.genome, args.out)
         input_file_type.append("Genomic FASTA")
-        actual_file_type.append(check_input(genome_file, output))
+ #       actual_file_type.append(check_input(genome_file, output))
+        actual_file_type.append("Genomic FASTA")
     if 'long' in args and args.long is not None:
         long_file = get_new_filename(args.long, args.out)
         input_file_type.append("Long-read FASTQ")
-        actual_file_type.append(check_input(long_file, output))
+#        actual_file_type.append(check_input(long_file, output))
+        actual_file_type.append("Long-read FASTQ")
     if 'short1' in args and args.short1 is not None:
         short1_file = get_new_filename(args.short1, args.out)
         input_file_type.append("Short-read FASTQ")
-        actual_file_type.append(check_input(short1_file, output))
+        #actual_file_type.append(check_input(short1_file, output))
+        actual_file_type.append("Short-read FASTQ")
     if 'short2' in args and args.short2 is not None:
         short2_file = get_new_filename(args.short2, args.out)
         input_file_type.append("Short-read FASTQ")
-        actual_file_type.append(check_input(short2_file, output))
+        #actual_file_type.append(check_input(short2_file, output))
+        actual_file_type.append("Short-read FASTQ")
     
     print('Complete', file=output)
 
@@ -42,10 +46,10 @@ def validate_inputs(args, output=sys.stderr):
         if 'Genomic FASTA' in input_file_type:
             print('Running genome pipeline')
             sim_file = simulate(args, genome_file, output=sys.stderr)
-            if args.subparser_name == "structrual_variant":
+            if args.subparser_name == "structural_variant":
                 long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
             if args.subparser_name == "snp_indel":
-                snp_indel(args, long_bam_file, output=sys.stderr)
+                snp_indel(args, sim_file, output=sys.stderr)
             if args.subparser_name == "all_variants":
                 long_bam_file = structural_variant(args, sim_file, output=sys.stderr)
                 snp_indel(args, long_bam_file, output=sys.stderr)
@@ -93,13 +97,13 @@ def check_input(file, output=sys.stderr):
         count, min_value, max_value, median, average = get_fastq_info(open_func, file)
         if average > 301:
             actual_file_type = "Long-read FASTQ"
-            #print("Input file type:\tLong-read FASTQ", file=output)
+            print("Input file type:\tLong-read FASTQ", file=output)
         elif average > 0:
             actual_file_type = "Short-read FASTQ"
-            #print("Input file type:\tShort-read FASTQ", file=output)
+            print("Input file type:\tShort-read FASTQ", file=output)
         else:
             raise Exception('Average length of reads is 0')
-        #print("Number of reads:\t{}".format(count), file=output)
+        print("Number of reads:\t{}".format(count), file=output)
         #print("Minimum length:\t\t{}".format(min_value), file=output)
         #print("Maximum length:\t\t{}".format(max_value), file=output)
         #print("Median length:\t\t{}".format(median), file=output)

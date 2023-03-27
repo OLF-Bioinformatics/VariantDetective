@@ -290,30 +290,47 @@ def check_snp_indel_args(args):
         sys.exit("Must use short read pair 1 FASTQ (-1) and short read pair 2 FASTQ (-2) when calling SNPs and indels.")
     if args.mincov_snp < 1:
         sys.exit(f'Error: minimum coverage must be over 1')
+    try:
+        length_parameters = [float(x) for x in args.readlen.split(',')]
+        args.mean_frag_length = length_parameters[0]
+        args.frag_length_stdev = length_parameters[1]
+    except (ValueError, IndexError):
+        sys.exit('Error: could not parse --length values')
+    if args.mean_frag_length <= 100:
+        sys.exit(f'Error: mean read length must be at least 100')
+    if args.frag_length_stdev < 0:
+        sys.exit('Error: read length stdev cannot be negative')
 
 def check_python_version():
     if sys.version_info.major < 3 or sys.version_info.minor < 6:
         sys.exit('Error: VariantDetective requires Python 3.6 or later')
 
+def copy_file(file1, file2):
+    try:
+        shutil.copyfile(file1, file2)
+    except shutil.SameFileError:
+        pass
+
+
 def copy_inputs(args):
-    shutil.copyfile(args.reference, get_new_filename(args.reference, args.out))
+    copy_file(args.reference, get_new_filename(args.reference, args.out))
     if args.genome is not None:
-            shutil.copyfile(args.genome, get_new_filename(args.genome, args.out))
+        copy_file(args.genome, get_new_filename(args.genome, args.out))
     if args.subparser_name == 'structural_variant':
         if args.long is not None:
-            shutil.copyfile(args.long, get_new_filename(args.long, args.out))    
+            copy_file(args.long, get_new_filename(args.long, args.out))    
     elif args.subparser_name == 'snp_indel':
         if args.short1 is not None:
-            shutil.copyfile(args.short1, get_new_filename(args.short1, args.out))
+            copy_file(args.short1, get_new_filename(args.short1, args.out))
         if args.short2 is not None:
-            shutil.copyfile(args.short2, get_new_filename(args.short2, args.out))
+            copy_file(args.short2, get_new_filename(args.short2, args.out))
     else:
         if args.short1 is not None:
-            shutil.copyfile(args.short1, get_new_filename(args.short1, args.out))
+            copy_file(args.short1, get_new_filename(args.short1, args.out))
         if args.short2 is not None:
-            shutil.copyfile(args.short2, get_new_filename(args.short2, args.out))
+            copy_file(args.short2, get_new_filename(args.short2, args.out))
         if args.long is not None:
-            shutil.copyfile(args.long, get_new_filename(args.long, args.out))
+            copy_file(args.long, get_new_filename(args.long, args.out))
         
 def create_outdir(args):
     if not os.path.isdir(args.out):

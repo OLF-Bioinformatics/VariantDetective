@@ -90,6 +90,17 @@ def snp_indel(args, snp_input, output=sys.stderr):
         bam_file_dir + '/alignment.mm.sorted.bam'
         run_process(command, "Error: Issue with mapping short reads")
         print('Complete', file=output)
+    elif args.subparser_name == 'snp_indel':
+        bam_file_dir = snp_indel_outdir
+        rgpl = 'ONT'
+        print('Running minimap2...', end=' ', file=output)
+        command = 'minimap2 -t ' + str(args.threads) + ' -ax map-ont ' + \
+        reference + ' ' + snp_input + \
+        ' | samtools view -Sb - -@ ' + str(args.threads) + \
+        ' | samtools sort - -@ ' + str(args.threads) + \
+        ' -o ' + bam_file_dir + '/alignment.mm.sorted.bam'
+        run_process(command, "Error: Issue with mapping short reads")
+        print('Complete', file=output)
     else:
         bam_file_dir = os.path.join(args.out, 'structural_variant')
         rgpl = 'ONT'
