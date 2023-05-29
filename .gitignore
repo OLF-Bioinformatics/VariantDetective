@@ -4,7 +4,8 @@
 *.fastq*
 *.fq*
 *.fna*
-*test*/
-tmp/
-
+tmp*/
+benchmark*/
+benchmark*
 __pycache__/
+parameter_*

@@ -79,8 +79,12 @@ def snp_indel(args, snp_input, output=sys.stderr):
     if isinstance(snp_input, list):
         bam_file_dir = snp_indel_outdir
         rgpl = 'ILLUMINA'
-        print('Running minimap2...', end=' ', file=output)
-        command = 'minimap2 -t ' + str(args.threads) + ' -ax sr ' + \
+        #print('Running minimap2...', end=' ', file=output)
+        #command = 'minimap2 -t ' + str(args.threads) + ' -ax sr ' + \
+        print('Running bwa...', end=' ', file=output)
+        command = 'bwa index ' + reference
+        run_process(command, "Error: Issue with running bwa index")
+        command = 'bwa mem -t ' + str(args.threads) + ' ' + \
         reference + ' ' + snp_input[0] + ' ' + snp_input[1] + \
         ' | samtools view -Sb - -@ ' + str(args.threads) + \
         ' | samtools sort -n - -@ ' +  str(args.threads) + \
@@ -195,6 +199,18 @@ def snp_indel(args, snp_input, output=sys.stderr):
         haplotypecaller_outdir + '/haplotypecaller.filt.vcf.gz ' + \
         clair3_outdir + '/clair3.filt.vcf.gz'
     run_process(command, "Error: Issue with vcf-isec")
+    if not os.path.exists(snp_indel_outdir + '/snp_0_1.vcf.gz'):
+        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
+            snp_indel_outdir + '/snp_0_1.vcf.gz'
+        run_process(command, "Error: Issue with snp_0_1.vcf.gz")
+    if not os.path.exists(snp_indel_outdir + '/snp_0_2.vcf.gz'):
+        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
+            snp_indel_outdir + '/snp_0_2.vcf.gz'
+        run_process(command, "Error: Issue with snp_0_2.vcf.gz")
+    if not os.path.exists(snp_indel_outdir + '/snp_1_2.vcf.gz'):
+        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
+            snp_indel_outdir + '/snp_1_2.vcf.gz'
+        run_process(command, "Error: Issue with snp_1_2.vcf.gz")
 
     command = 'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz && ' + \
         'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1.vcf.gz && ' + \

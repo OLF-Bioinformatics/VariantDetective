@@ -2,7 +2,7 @@
 
 This program is designed to identify short variants and structural variants. Variants can be identified from genomic sequences (FASTA) or from combinations of short and/or long reads (FASTQ). If genomic sequences are provided as input, long reads will be simulated to detect variants.
 
-This tool makes use of other open-source variant callers and creates consensus sets (support from at least 2 callers) in order to validate a variant. Summary files for short variants and structural variants are generated outlining the different types of variants found in the sample.
+This tool makes use of other open-source variant callers and creates consensus sets in order to validate a variant. Summary files for short variants and structural variants are generated outlining the different types of variants found in the sample.
 
 ## Table of Contents
   - [Requirements](#requirements)
@@ -44,7 +44,7 @@ VariantDetective makes use of published open-source variant callers and creates 
 ### Short Variant Callers
 - [Clair3](https://github.com/HKU-BAL/Clair3)
 - [Freebayes](https://github.com/freebayes/freebayes)
-- [GATK4 HapllotypeCaller](https://github.com/broadinstitute/gatk)
+- [GATK4 HaplotypeCaller](https://github.com/broadinstitute/gatk)
 
 Intersections of VCF files were created using the [VCFtools](https://github.com/vcftools) `vcf-isec` tool. The final VCF output consensus file containing variants found in at least 2 variant callers was created using the [BCFtools](https://github.com/samtools/bcftools) `concat` tool.
 
@@ -54,13 +54,12 @@ Intersections of VCF files were created using the [VCFtools](https://github.com/
 - [NanoVar](https://github.com/cytham/nanovar)
 - [SVIM](https://github.com/eldariont/svim)
 
-The consensus VCF file was created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants were a maximum allowed distance of 1kbp between breakpoints, calls supported by at least 2 variant callers where they agree on both type and strand.  
+The consensus VCF file was created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants were a maximum allowed distance of 1kbp between breakpoints, calls supported by at least 3 variant callers where they agree on both type and strand.  
 
 ## Long Read Simulator
-When a genomic FASSTA file is provided as query input, long reads are simulated in order to detect variants. The long read simulation tool is adapted from [Badread](https://github.com/rrwick/Badread), a tool that creates simulated reads. It has been modified to create perfectly matching reads to the reference file and to allow multi-threading to speed up the process.
+When a genomic FASTA file is provided as query input, long reads are simulated in order to detect variants. The long read simulation tool is adapted from [Badread](https://github.com/rrwick/Badread), a tool that creates simulated reads. It has been modified to create perfectly matching reads to the reference file and to allow multi-threading to speed up the process.
 
 ## Parameters
-
 All input files can be uncompressed (.fasta/.fastq) or gzipped (.fastq.gz/.fastq.gz)
 
 | Options | Available Command | Description | Default | 
