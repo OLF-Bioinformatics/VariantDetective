@@ -79,19 +79,21 @@ def snp_indel(args, snp_input, output=sys.stderr):
     if isinstance(snp_input, list):
         bam_file_dir = snp_indel_outdir
         rgpl = 'ILLUMINA'
-        #print('Running minimap2...', end=' ', file=output)
-        #command = 'minimap2 -t ' + str(args.threads) + ' -ax sr ' + \
-        print('Running bwa...', end=' ', file=output)
-        command = 'bwa index ' + reference
-        run_process(command, "Error: Issue with running bwa index")
-        command = 'bwa mem -t ' + str(args.threads) + ' ' + \
-        reference + ' ' + snp_input[0] + ' ' + snp_input[1] + \
+        if args.assembler == 'minimap2':
+            print('Running minimap2...', end=' ', file=output)
+            command = 'minimap2 -t ' + str(args.threads) + ' -ax sr '
+        elif args.assembler == 'bwa':
+            print('Running bwa...', end=' ', file=output)
+            command = 'bwa index ' + reference
+            run_process(command, "Error: Issue with running bwa index")
+            command = 'bwa mem -t ' + str(args.threads) + ' '
+        command += reference + ' ' + snp_input[0] + ' ' + snp_input[1] + \
         ' | samtools view -Sb - -@ ' + str(args.threads) + \
         ' | samtools sort -n - -@ ' +  str(args.threads) + \
         ' | samtools fixmate -m - - -@ ' + str(args.threads) + \
         ' | samtools sort - -@ ' + str(args.threads) + \
         ' | samtools markdup -r - -@ ' + str(args.threads) + ' ' + \
-        bam_file_dir + '/alignment.mm.sorted.bam'
+        bam_file_dir + '/alignment.sorted.bam'
         run_process(command, "Error: Issue with mapping short reads")
         print('Complete', file=output)
     elif args.subparser_name == 'snp_indel':
@@ -102,7 +104,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
         reference + ' ' + snp_input + \
         ' | samtools view -Sb - -@ ' + str(args.threads) + \
         ' | samtools sort - -@ ' + str(args.threads) + \
-        ' -o ' + bam_file_dir + '/alignment.mm.sorted.bam'
+        ' -o ' + bam_file_dir + '/alignment.sorted.bam'
         run_process(command, "Error: Issue with mapping short reads")
         print('Complete', file=output)
     else:
@@ -112,13 +114,13 @@ def snp_indel(args, snp_input, output=sys.stderr):
     # Run Picard 
     command = 'picard CreateSequenceDictionary R=' + reference
     run_process(command, "Error: Picard CreateSequenceDictionary failed")
-    command = 'picard AddOrReplaceReadGroups I=' + bam_file_dir + '/alignment.mm.sorted.bam O=' + \
-        snp_indel_outdir + '/alignment.mm.rg.sorted.bam RGID=1 RGLB=SAMPLE RGSM=SAMPLE RGPU=SAMPLE RGPL=' + rgpl
+    command = 'picard AddOrReplaceReadGroups I=' + bam_file_dir + '/alignment.sorted.bam O=' + \
+        snp_indel_outdir + '/alignment.rg.sorted.bam RGID=1 RGLB=SAMPLE RGSM=SAMPLE RGPU=SAMPLE RGPL=' + rgpl
     run_process(command, "Error: Picard AddOrReplaceReadGroups failed")
-    command = 'samtools index ' + snp_indel_outdir + '/alignment.mm.rg.sorted.bam'
+    command = 'samtools index ' + snp_indel_outdir + '/alignment.rg.sorted.bam'
     run_process(command, "Error: Samtools index failed")
     try:
-        command = 'rm ' + snp_indel_outdir + '/alignment.mm.sorted.bam'
+        command = 'rm ' + snp_indel_outdir + '/alignment.sorted.bam'
         run_process(command, "Error: Samtools index failed")
     except:
         pass
@@ -126,7 +128,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
     # Run Freebayes
     print('Running Freebayes...', end=' ', file=output)
     command = 'freebayes -f ' + reference + ' ' + \
-            snp_indel_outdir + '/alignment.mm.rg.sorted.bam -p 1 > ' + \
+            snp_indel_outdir + '/alignment.rg.sorted.bam -p 1 > ' + \
             freebayes_outdir + '/freebayes.vcf'
     run_process(command, "Error: Issue with Freebayes")
 
@@ -146,7 +148,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
     # Run HaplotypeCaller
     print('Running HaplotypeCaller...', end=' ', file=output)
     command = 'gatk HaplotypeCaller -R ' + reference + \
-        ' -I ' + snp_indel_outdir + '/alignment.mm.rg.sorted.bam' + \
+        ' -I ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -O ' + haplotypecaller_outdir + '/haplotypecaller.vcf' + \
         ' -ploidy 1'
     run_process(command, "Error: Issue with HaplotypeCaller")
@@ -167,7 +169,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
     # Run Clair3
     print('Running Clair3...', end=' ', file=output)
     command = 'run_clair3.sh -f ' + reference + \
-        ' -b ' + snp_indel_outdir + '/alignment.mm.rg.sorted.bam' + \
+        ' -b ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -o ' + clair3_outdir + \
         ' -p "ilmn" -m variantdetective/clair3_models/ilmn --include_all_ctgs ' + \
         ' --no_phasing_for_fa --haploid_precise -t ' + str(args.threads)

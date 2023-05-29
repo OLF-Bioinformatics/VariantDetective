@@ -92,12 +92,12 @@ def structural_variant(args, input_reads, output=sys.stderr):
     print('Sorting BAM file...', end=' ', file=output)
     command = 'samtools sort -@ ' + str(args.threads) + ' ' + \
             nanovar_outdir + '/*-mm.bam > ' + \
-            structural_variant_outdir + '/alignment.mm.sorted.bam'
+            structural_variant_outdir + '/alignment.sorted.bam'
     run_process(command, "Error: Issue with sorting BAM file")
     print('Complete', file=output)
 
     print('Indexing sorted BAM file...', end=' ', file=output)
-    command = 'samtools index ' + structural_variant_outdir + '/alignment.mm.sorted.bam'
+    command = 'samtools index ' + structural_variant_outdir + '/alignment.sorted.bam'
     run_process(command, "Error: Issue with indexing BAM file")
     print('Complete', file=output)
 
@@ -116,14 +116,14 @@ def structural_variant(args, input_reads, output=sys.stderr):
             ' -o ' + nanosv_outdir + '/variants.vcf ' + \
             ' -s samtools' + \
             ' -b ' + nanosv_outdir + '/reference.bed ' + \
-            structural_variant_outdir + '/alignment.mm.sorted.bam' 
+            structural_variant_outdir + '/alignment.sorted.bam' 
     run_process(command, "Error: NanoSV failed")
     print('Complete', file=output)
 
     # Run SVIM
     print('Running SVIM...', end=' ', file=output)
     command = 'svim alignment ' + svim_outdir + ' ' + \
-            structural_variant_outdir + '/alignment.mm.sorted.bam ' + \
+            structural_variant_outdir + '/alignment.sorted.bam ' + \
             reference + \
             ' --min_sv_size ' + str(args.minlen_sv)
     run_process(command, "Error: SVIM failed")
@@ -136,7 +136,7 @@ def structural_variant(args, input_reads, output=sys.stderr):
 
     # Run CuteSV
     print('Running CuteSV...', end=' ', file=output)
-    command = 'cuteSV ' + structural_variant_outdir + '/alignment.mm.sorted.bam ' + \
+    command = 'cuteSV ' + structural_variant_outdir + '/alignment.sorted.bam ' + \
             reference + ' ' + \
             cutesv_outdir + '/variants.vcf ' + \
             cutesv_outdir + \
@@ -167,4 +167,4 @@ def structural_variant(args, input_reads, output=sys.stderr):
     
     print('Complete', file=output)
 
-    return structural_variant_outdir + '/alignment.mm.sorted.bam'
+    return structural_variant_outdir + '/alignment.sorted.bam'
