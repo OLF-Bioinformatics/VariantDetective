@@ -254,6 +254,10 @@ def check_all_variants_args(args):
         sys.exit('Error: minimum length of SV must be over 1')
     if args.mincov_snp < 1:
         sys.exit(f'Error: minimum coverage must be over 1')
+    if args.snp_consensus < 1 or args.snp_consensus > 3:
+        sys.exit(f'Error: snp_consensus must be between 1 and 3')
+    if args.sv_consensus < 1 or args.sv_consensus > 4:
+        sys.exit(f'Error: sv_consensus must be between 1 and 4')
     
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
@@ -282,7 +286,9 @@ def check_structural_variant_args(args):
         sys.exit(f'Error: minimum coverage must be over 1')
     if args.minlen_sv < 1:
         sys.exit('Error: minimum length of SV must be over 1')
-    
+    if args.sv_consensus < 1 or args.sv_consensus > 4:
+        sys.exit(f'Error: sv_consensus must be between 1 and 4')
+      
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
         args.mean_frag_length = length_parameters[0]
@@ -312,6 +318,9 @@ def check_snp_indel_args(args):
         sys.exit("Must use short read pair 1 FASTQ (-1) and short read pair 2 FASTQ (-2) when calling SNPs and indels.")
     if args.mincov_snp < 1:
         sys.exit(f'Error: minimum coverage must be over 1')
+    if args.snp_consensus < 1 or args.snp_consensus > 3:
+        sys.exit(f'Error: snp_consensus must be between 1 and 3')
+    
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
         args.mean_frag_length = length_parameters[0]

@@ -217,16 +217,34 @@ def snp_indel(args, snp_input, output=sys.stderr):
     command = 'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz && ' + \
         'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1.vcf.gz && ' + \
         'tabix -p vcf ' + snp_indel_outdir + '/snp_0_2.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_1_2.vcf.gz'
+        'tabix -p vcf ' + snp_indel_outdir + '/snp_1_2.vcf.gz && ' + \
+        'tabix -p vcf ' + snp_indel_outdir + '/snp_0.vcf.gz && ' + \
+        'tabix -p vcf ' + snp_indel_outdir + '/snp_1.vcf.gz && ' + \
+        'tabix -p vcf ' + snp_indel_outdir + '/snp_2.vcf.gz' 
+        
     run_process(command, "Error: Issue with Tabix")
-
-    command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
-        snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
-        snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
-        snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
-        '-o ' + snp_indel_outdir + '/snp_final.vcf'
-    run_process(command, "Error: Issue with bcftools")
-    
+    if args.snp_consensus == 3:
+        command = 'gunzip -c ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz > ' + \
+            snp_indel_outdir + '/snp_final.vcf' 
+        run_process(command, "Error: Issue with bcftools")
+    elif args.snp_consensus == 2:
+        command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
+            snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
+            snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
+            snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
+            '-o ' + snp_indel_outdir + '/snp_final.vcf'
+        run_process(command, "Error: Issue with bcftools")
+    elif args.snp_consensus == 1:
+        command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
+            snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
+            snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
+            snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
+            snp_indel_outdir + '/snp_0.vcf.gz ' + \
+            snp_indel_outdir + '/snp_1.vcf.gz ' + \
+            snp_indel_outdir + '/snp_2.vcf.gz ' + \
+            '-o ' + snp_indel_outdir + '/snp_final.vcf'
+        run_process(command, "Error: Issue with bcftools")
+        
     command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + \
         snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
         'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + \
