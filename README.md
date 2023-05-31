@@ -39,14 +39,14 @@ MUST ADD QUICK USAGE
 | `variantdetective-runner.py snp_indel` |  Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
 
 ## Variant Callers
-VariantDetective makes use of published open-source variant callers and creates consensus sets (support from at least 2 callers) in order to validate a variant.
+VariantDetective makes use of published open-source variant callers and creates consensus sets in order to validate a variant.
 
 ### Short Variant Callers
 - [Clair3](https://github.com/HKU-BAL/Clair3)
 - [Freebayes](https://github.com/freebayes/freebayes)
 - [GATK4 HaplotypeCaller](https://github.com/broadinstitute/gatk)
 
-Intersections of VCF files were created using the [VCFtools](https://github.com/vcftools) `vcf-isec` tool. The final VCF output consensus file containing variants found in at least 2 variant callers was created using the [BCFtools](https://github.com/samtools/bcftools) `concat` tool.
+Intersections of VCF files are created using the [VCFtools](https://github.com/vcftools) `vcf-isec` tool. The final VCF output consensus file containing variants found in at least 2 variant callers (default) is created using the [BCFtools](https://github.com/samtools/bcftools) `concat` tool.
 
 ### Structural Variant Callers
 - [cuteSV](https://github.com/tjiangHIT/cuteSV)
@@ -54,7 +54,7 @@ Intersections of VCF files were created using the [VCFtools](https://github.com/
 - [NanoVar](https://github.com/cytham/nanovar)
 - [SVIM](https://github.com/eldariont/svim)
 
-The consensus VCF file was created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants were a maximum allowed distance of 1kbp between breakpoints, calls supported by at least 3 variant callers where they agree on both type and strand.  
+The consensus VCF file is created using the [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR) `merge` tool. Parameters for merging structural variants are a maximum allowed distance of 1 kbp between breakpoints and calls supported by at least 3 variant callers (default) where they agree on both type and strand.  
 
 ## Long Read Simulator
 When a genomic FASTA file is provided as query input, long reads are simulated in order to detect variants. The long read simulation tool is adapted from [Badread](https://github.com/rrwick/Badread), a tool that creates simulated reads. It has been modified to create perfectly matching reads to the reference file and to allow multi-threading to speed up the process.
@@ -72,8 +72,13 @@ All input files can be uncompressed (.fasta/.fastq) or gzipped (.fastq.gz/.fastq
 | `--readcov READCOV` |  `all_variants`<br>`structural_variant`<br>`snp_indel` | If using `-g` as input, define the absolute amount of simulated reads (e.g. 250M) or relative simulated read depth (e.g. 50x) | `50x` | 
 | `--readlen MEAN,STDEV` |  `all_variants`<br>`structural_variant`<br>`snp_indel` | If using `-g` as input, define the mean length and standard deviation of simulated reads | `15000,13000` |
 | `--mincov_snp MINCOV_SNP` |  `all_variants`<br>`snp_indel` | Minimum number of reads required to call SNP/Indel | `2` |
+| `--minqual_snp MINQUAL_SNP` |  `all_variants`<br>`snp_indel` | Minimum quality of SNP/Indel to be filtered out | `20` |
+| `--assembler {bwa,minimap2}` |  `all_variants`<br>`snp_indel` | Choose which assembler (bwa or minimap2) to use when using paired-end short reads | `bwa` |
+| `--snp_consensus SNP_CONSENSUS` |  `all_variants`<br>`snp_indel` | Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list | `2` |
 | `--mincov_sv MINCOV_SV` | `all_variants`<br>`structural_variant` | Minimum number of reads required to call SV  | `2` |
 | `--minlen_sv MINLEN_SV` | `all_variants`<br>`structural_variant` | Minimum length of SV to be detected | `25` |
+| `--minqual_sv MINQUAL_SV` |  `all_variants`<br>`structural_variant` | Minimum quality of SV to be filtered out from SVIM | `15` |
+| `--sv_consensus SV_CONSENSUS` |  `all_variants`<br>`structural_variant` | Specifies the minimum number of tools required to detect an SV to include it in the consensus list | `3` |
 | `-o OUT`<br>`--out OUT` | `all_variants`<br>`structural_variant`<br>`snp_indel` |  Output directory. Will be created if it does not exist | `./` |
 | `-t THREADS` <br> `--threads THREADS` | `all_variants` <br> `structural_variant` <br> `snp_indel` | Number of threads used for job | `1` |
 | `-h` <br> `--help` | `all_variants`<br>`structural_variant`<br>`snp_indel` | Show help message and exit | - |
