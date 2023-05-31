@@ -66,10 +66,11 @@ def get_open_function(file_extension):
         open_func = open
     return open_func
 
-def run_process(command, error_message):
+def run_process(command):
     process = Popen([command],
-                    universal_newlines=True, stdout=PIPE, stderr=STDOUT, shell=True, executable='/bin/bash')
-    exitcode = process.wait()
-    if exitcode != 0:
-        raise Exception(error_message)
+                    universal_newlines=True, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')
+    output, error = process.communicate()
+    
+    if process.returncode != 0:
+        raise Exception(error)
     

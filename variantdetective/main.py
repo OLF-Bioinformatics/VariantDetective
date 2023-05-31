@@ -11,6 +11,7 @@ import os
 import pathlib
 import shutil
 import sys
+import datetime
 
 from .tools import get_new_filename
 from .validate_inputs import validate_inputs
@@ -31,7 +32,7 @@ def main(output=sys.stderr):
 
     create_outdir(args)
     copy_inputs(args)
-    print('Validating input files...', end= ' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tValidating input files...', file=output)
     validate_inputs(args, output=output)    
 
 def parse_args(args):
@@ -98,7 +99,7 @@ def structural_variant_subparser(subparsers):
     simulate_args.add_argument("--readlen", type=str, default='15000,13000',
                                 help='Fragment length distribution (mean,stdev) (default: %(default)s)')
     
-    nanovar_args = group.add_argument_group('Variant Call')
+    nanovar_args = group.add_argument_group('Structural Variant Call')
     nanovar_args.add_argument("--mincov_sv", type=int, default=2,
                                 help='Minimum number of reads required to call variant (default: %(default)i)')
     nanovar_args.add_argument("--minlen_sv", type=int, default=25,
@@ -258,7 +259,10 @@ def check_all_variants_args(args):
         sys.exit(f'Error: snp_consensus must be between 1 and 3')
     if args.sv_consensus < 1 or args.sv_consensus > 4:
         sys.exit(f'Error: sv_consensus must be between 1 and 4')
-    
+    if args.minqual_sv < 0:
+        sys.exit(f'Error: minimum quality of SV must be over 0')
+    if args.minqual_snp < 0:
+        sys.exit(f'Error: minimum quality of SNP must be over 0')
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
         args.mean_frag_length = length_parameters[0]
@@ -288,6 +292,8 @@ def check_structural_variant_args(args):
         sys.exit('Error: minimum length of SV must be over 1')
     if args.sv_consensus < 1 or args.sv_consensus > 4:
         sys.exit(f'Error: sv_consensus must be between 1 and 4')
+    if args.minqual_sv < 0:
+        sys.exit(f'Error: minimum quality of SV must be over 0')
       
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
@@ -320,7 +326,9 @@ def check_snp_indel_args(args):
         sys.exit(f'Error: minimum coverage must be over 1')
     if args.snp_consensus < 1 or args.snp_consensus > 3:
         sys.exit(f'Error: snp_consensus must be between 1 and 3')
-    
+    if args.minqual_snp < 0:
+        sys.exit(f'Error: minimum quality of SNP must be over 0')
+
     try:
         length_parameters = [float(x) for x in args.readlen.split(',')]
         args.mean_frag_length = length_parameters[0]

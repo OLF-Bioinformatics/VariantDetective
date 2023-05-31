@@ -9,6 +9,7 @@ import os
 import sys
 import io
 import pandas as pd
+import datetime
 from .tools import get_new_filename, run_process
 
 def read_vcf(path):
@@ -58,7 +59,7 @@ def generate_tab_csv_summary(vcf, output_dir):
     SUMMARY_DATA.to_csv(output_dir + '/combined_sv_summary.txt', sep='\t', index=False)
 
 def structural_variant(args, input_reads, output=sys.stderr):
-    print('Running structural_variant tool', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tStarting structural_variant tool', file=output)
     reference = get_new_filename(args.reference, args.out)   
     structural_variant_outdir = os.path.join(args.out, 'structural_variant')
     nanovar_outdir = os.path.join(structural_variant_outdir, 'nanovar')
@@ -78,64 +79,59 @@ def structural_variant(args, input_reads, output=sys.stderr):
         os.makedirs(cutesv_outdir)
 
     # Run NanoVar 
-    print('Running NanoVar...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning NanoVar...', file=output)
     command = 'nanovar -t ' + str(args.threads) +  ' ' + \
             input_reads  + ' ' + \
             reference + ' ' + \
             nanovar_outdir + \
             ' -c ' + str(args.mincov_sv) + \
             ' -l ' + str(args.minlen_sv)
-    run_process(command, "Error: NanoVar failed")
-    print('Complete', file=output)
+    run_process(command)
 
     # Sort bam file
-    print('Sorting BAM file...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tSorting BAM file...', file=output)
     command = 'samtools sort -@ ' + str(args.threads) + ' ' + \
             nanovar_outdir + '/*-mm.bam > ' + \
             structural_variant_outdir + '/alignment.sorted.bam'
-    run_process(command, "Error: Issue with sorting BAM file")
-    print('Complete', file=output)
-
-    print('Indexing sorted BAM file...', end=' ', file=output)
+    run_process(command)
+    
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tIndexing sorted BAM file...', file=output)
     command = 'samtools index ' + structural_variant_outdir + '/alignment.sorted.bam'
-    run_process(command, "Error: Issue with indexing BAM file")
-    print('Complete', file=output)
+    run_process(command)
 
     # Run NanoSV
-    print('Running NanoSV...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning NanoSV...', file=output)
     command = 'samtools faidx ' + reference
-    run_process(command, "Error: Issue with generating index for reference genome")
+    run_process(command)
     
     command = 'cut -f 1,2 ' + reference + '.fai > ' + nanosv_outdir + '/chrom.sizes'
-    run_process(command, "Error: Issue with getting reference genome chromosome sizes")
+    run_process(command)
 
     command = 'bedtools random -l 1 -g ' + nanosv_outdir + '/chrom.sizes > ' + nanosv_outdir + '/reference.bed'
-    run_process(command, "Error: Issue with generating reference genome bed file")
+    run_process(command)
 
     command = 'NanoSV -t ' + str(args.threads) + \
             ' -o ' + nanosv_outdir + '/variants.vcf ' + \
             ' -s samtools' + \
             ' -b ' + nanosv_outdir + '/reference.bed ' + \
             structural_variant_outdir + '/alignment.sorted.bam' 
-    run_process(command, "Error: NanoSV failed")
-    print('Complete', file=output)
-
+    run_process(command)
+    
     # Run SVIM
-    print('Running SVIM...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning SVIM...', file=output)
     command = 'svim alignment ' + svim_outdir + ' ' + \
             structural_variant_outdir + '/alignment.sorted.bam ' + \
             reference + \
             ' --min_sv_size ' + str(args.minlen_sv)
-    run_process(command, "Error: SVIM failed")
+    run_process(command)
     
-    command = "bcftools view -i 'QUAL >= 15' " + \
+    command = "bcftools view -i 'QUAL >= " + str(args.minqual_sv) + "' " + \
             svim_outdir + '/variants.vcf > ' + \
             svim_outdir + '/variants.filt.vcf'
-    run_process(command, "Error: filtering SVIM output failed")
-    print('Complete', file=output)
+    run_process(command)
 
     # Run CuteSV
-    print('Running CuteSV...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning CuteSV...', file=output)
     command = 'cuteSV ' + structural_variant_outdir + '/alignment.sorted.bam ' + \
             reference + ' ' + \
             cutesv_outdir + '/variants.vcf ' + \
@@ -144,27 +140,24 @@ def structural_variant(args, input_reads, output=sys.stderr):
             ' -s ' + str(args.mincov_sv) + \
             ' -l ' + str(args.minlen_sv) + \
             ' -L -1'  
-    run_process(command, "Error: CuteSV failed")
-    print('Complete', file=output)
-
+    run_process(command)
+    
     # Run SURVIVOR
-    print('Running SURVIVOR...', end=' ', file=output)
+    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning SURVIVOR...', file=output)
     command = 'ls ' + nanovar_outdir + '/*pass.vcf ' + \
             cutesv_outdir + '/variants.vcf ' + \
             nanosv_outdir + '/variants.vcf ' + \
             svim_outdir + '/variants.filt.vcf > ' + \
             structural_variant_outdir + '/vcf_list'
-    run_process(command, "Error: couldn't find VCF files")
+    run_process(command)
 
     command = 'SURVIVOR merge ' + structural_variant_outdir + \
             '/vcf_list 1000 ' + str(args.sv_consensus) + ' 1 1 0 ' + str(args.minlen_sv) + ' ' \
             + structural_variant_outdir + '/combined_sv.vcf'
-    run_process(command, "Error: SURVIVOR failed")
+    run_process(command)
 
     generate_tab_csv_summary(read_vcf(structural_variant_outdir + '/combined_sv.vcf'), structural_variant_outdir)
     command = 'rm ' + structural_variant_outdir + '/vcf_list'
-    run_process(command, "Error: Issue removing vcf_list")
+    run_process(command)
     
-    print('Complete', file=output)
-
     return structural_variant_outdir + '/alignment.sorted.bam'

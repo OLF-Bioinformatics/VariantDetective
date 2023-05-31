@@ -9,31 +9,11 @@ https://github.com/rrwick/Badread
 """
 
 import collections
-import contextlib
 import gzip
-import io
 import os
 import random
 import re
 import sys
-
-def bold(text):
-    return BOLD + text + END_FORMATTING
-
-BOLD = '\033[1m'
-END_FORMATTING = '\033[0m'
-
-@contextlib.contextmanager
-def captured_output():
-    new_out, new_err = io.StringIO(), io.StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
-
-
 
 def complement_base(base):
     try:
@@ -48,16 +28,6 @@ REV_COMP_DICT = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'a': 't', 't': 'a',
                  'm': 'k', 'b': 'v', 'v': 'b', 'd': 'h', 'h': 'd', 'n': 'n', 
                  '.': '.', '-': '-', '?': '?'}
 
-def float_to_str(v, decimals=1, trim_zeros=False):
-    if float(int(v)) == v:
-        return str(int(v))
-    else:
-        formatter = '%.' + str(decimals) + 'f'
-        result = formatter % v
-        if trim_zeros:
-            while result.endswith('0'):
-                result = result[:-1]
-        return result
 def get_compression_type(filename):
     """
     Attempts to guess the compression (if any) on a file using the first few bytes.
@@ -86,20 +56,6 @@ def get_open_func(filename):
         return gzip.open
     else:  # plain text
         return open
-
-def get_random_base():
-    """
-    Returns a random base with 25% probability of each.
-    """
-    return RANDOM_SEQ_DICT[random.randint(0, 3)]
-
-RANDOM_SEQ_DICT = {0: 'A', 1: 'C', 2: 'G', 3: 'T'}
-
-def get_random_sequence(length):
-    """
-    Returns a random sequence of the given length.
-    """
-    return ''.join([get_random_base() for _ in range(length)])
 
 def get_sequence_file_type(filename):
     """
@@ -153,16 +109,6 @@ def load_fasta(filename):
         if name:
             fasta_seqs[name.split()[0]] = ''.join(sequence)
     return fasta_seqs, depths, circular
-
-def print_in_two_columns(l1p1, l2p1, l3p1, l1p2, l2p2, l3p2, output, space_between=6):
-    part_1_len = max(len(l1p1), len(l2p1), len(l3p1)) + space_between
-    format_str = '{:<' + str(part_1_len) + '}'
-    l1p1 = format_str.format(l1p1)
-    l2p1 = format_str.format(l2p1)
-    l3p1 = format_str.format(l3p1)
-    print(l1p1 + l1p2, file=output)
-    print(l2p1 + l2p2, file=output)
-    print(l3p1 + l3p2, file=output)
 
 def random_chance(chance):
     assert 0.0 <= chance <= 1.0
