@@ -105,9 +105,9 @@ def structural_variant_subparser(subparsers):
     nanovar_args.add_argument("--minlen_sv", type=int, default=25,
                                 help='Minimum length of SV to be detected (default: %(default)i)')
     nanovar_args.add_argument("--minqual_sv", type=int, default=15,
-                                help='Minimum quality of SV to be filtered out with SVIM (default: %(default)i)')
+                                help='Minimum quality of SV to be filtered out from SVIM (default: %(default)i)')
     nanovar_args.add_argument("--sv_consensus", type=int, default=3,
-                                help='Specifies the minimum number of tools required to detect an SV to include it in the consensus list %(default)i')
+                                help='Specifies the minimum number of tools required to detect an SV to include it in the consensus list (default: %(default)i)')
 
 
     other_args = group.add_argument_group('Other')
@@ -161,7 +161,7 @@ def all_variants_subparser(subparsers):
     nanovar_args.add_argument("--minqual_sv", type=int, default=15,
                                 help='Minimum quality of SV to be filtered out with SVIM (default: %(default)i)')
     nanovar_args.add_argument("--sv_consensus", type=int, default=3,
-                                help='Specifies the minimum number of tools required to detect an SV to include it in the consensus list %(default)i')
+                                help='Specifies the minimum number of tools required to detect an SV to include it in the consensus list (default: %(default)i)')
 
     snp_args = group.add_argument_group('SNP/Indel Call')
     snp_args.add_argument("--mincov_snp", type=int, default=2,
@@ -171,7 +171,7 @@ def all_variants_subparser(subparsers):
     snp_args.add_argument("--assembler", type=str, default='bwa', choices=['bwa', 'minimap2'],
                                 help='Choose which assembler (bwa or minimap2) to use when using paired-end short reads (default: %(default)s)')
     snp_args.add_argument("--snp_consensus", type=int, default=2,
-                                help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list %(default)i')
+                                help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list (default: %(default)i)')
 
 
     other_args = group.add_argument_group('Other')
@@ -222,7 +222,7 @@ def snp_indel_subparser(subparsers):
     snp_args.add_argument("--assembler", type=str, default='bwa', choices=['bwa', 'minimap2'],
                                 help='Choose which assembler (bwa or minimap2) to use when using paired-end short reads (default: %(default)s)')
     snp_args.add_argument("--snp_consensus", type=int, default=2,
-                                help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list %(default)i')
+                                help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list (default: %(default)i)')
 
     other_args = group.add_argument_group('Other')
     other_args.add_argument('-o', "--out", type=str, default='./',
