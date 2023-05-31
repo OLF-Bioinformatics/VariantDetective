@@ -157,7 +157,7 @@ def structural_variant(args, input_reads, output=sys.stderr):
     run_process(command, "Error: couldn't find VCF files")
 
     command = 'SURVIVOR merge ' + structural_variant_outdir + \
-            '/vcf_list 1000 3 1 1 0 ' + str(args.minlen_sv) + ' ' \
+            '/vcf_list 1000 ' + args.sv_consensus + ' 1 1 0 ' + str(args.minlen_sv) + ' ' \
             + structural_variant_outdir + '/combined_sv.vcf'
     run_process(command, "Error: SURVIVOR failed")
 

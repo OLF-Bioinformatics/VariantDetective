@@ -24,6 +24,7 @@ def read_vcf(path):
 def generate_tab_csv_summary(vcf, output_dir):
     CHROM = vcf.iloc[:,0]
     POS = vcf.iloc[:,1]
+    FORMAT_ID = vcf.iloc[:,8].str.split(':', expand=True)
     FORMAT = vcf.iloc[:,9].str.split(':', expand=True)
     INFO = vcf.iloc[:,7].str.split(';', expand=True)
     REF = vcf.iloc[:,3]
@@ -32,6 +33,16 @@ def generate_tab_csv_summary(vcf, output_dir):
     TYPE = INFO.iloc[:,40].str.split('=',expand=True).iloc[:,1]
     TYPE.name = 'TYPE'
     for i, v in TYPE.items():
+        try:
+            AD_index =list(FORMAT_ID.iloc[i]).index('AD')
+            RAW_SUPPORT = FORMAT.iloc[i,AD_index].split(",")
+            SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
+        except ValueError:
+            AF_index =list(FORMAT_ID.iloc[i]).index('AF')
+            DP_index =list(FORMAT_ID.iloc[i]).index('DP')
+            REF_COUNT = round(int(FORMAT.iloc[i,DP_index]) - (float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index])))
+            ALT_COUNT = round(float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index]))
+            SUPPORT[i] = "REF=" + str(REF_COUNT) + ";ALT=" + str(ALT_COUNT)
         if (v == None):
             if (len(REF[i]) < len(ALT[i])):
                 TYPE[i] = 'ins'
@@ -41,11 +52,6 @@ def generate_tab_csv_summary(vcf, output_dir):
                 TYPE[i] = 'snp'
             else:
                 TYPE[i] = 'complex'
-            RAW_SUPPORT = FORMAT.iloc[i,1].split(",")
-            SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
-        else:
-            RAW_SUPPORT = FORMAT.iloc[i,2].split(",")
-            SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
 
     TAB_DATA = pd.concat([CHROM, POS, TYPE, REF, ALT, SUPPORT], axis=1)
 
