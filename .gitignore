@@ -5,8 +5,6 @@
 *.fq*
 *.fna*
 tmp*/
-benchmark*/
-benchmark*
+benchmarking/benchmark*/
 __pycache__/
-parameter_*
 todo.txt
