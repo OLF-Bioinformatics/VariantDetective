@@ -1,0 +1,40 @@
+package:
+  name: variantdetective
+  version: "1.0.0"
+
+source:
+  git_rev: 1.0.0
+  git_url: https://github.com/OLF-Bioinformatics/VariantDetective.git
+
+requirements:
+  build:
+    - python
+    - pip
+  run:
+    - python
+    # bioconda
+    - minimap2
+    - bwa
+    - samtools
+    - picard
+    - freebayes
+    - gatk4
+    - clair3
+    - vcflib
+    - tabix
+    - vcftools
+    - bcftools
+    - nanovar
+    - bedtools
+    - nanosv
+    - svim
+    - cutesv
+    - survivor
+    # conda-forge
+    - numpy
+    - pandas
+
+about:
+  home: https://github.com/OLF-Bioinformatics/VariantDetective
+  license: MIT
+  summary: Identify short variants and structural variants from raw sequencing data or genomic sequences
