@@ -1,7 +1,7 @@
 dir='benchmark-threads-sv'
 mkdir -p $dir
 cp parameter_sv.txt $dir/parameter_sv.txt
-for j in 48
+for j in {1,2,4,8,12,24,48}
 do
   for i in {1..5}
   do 

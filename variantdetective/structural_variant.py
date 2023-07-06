@@ -65,7 +65,7 @@ def structural_variant(args, input_reads, output=sys.stderr):
     nanovar_outdir = os.path.join(structural_variant_outdir, 'nanovar')
     nanosv_outdir = os.path.join(structural_variant_outdir, 'nanosv')
     svim_outdir = os.path.join(structural_variant_outdir, 'svim')
-    cutesv_outdir= os.path.join(structural_variant_outdir, 'cutesv')
+    cutesv_outdir = os.path.join(structural_variant_outdir, 'cutesv')
     
     if not os.path.isdir(structural_variant_outdir):
         os.makedirs(structural_variant_outdir)
@@ -80,7 +80,16 @@ def structural_variant(args, input_reads, output=sys.stderr):
 
     # Run NanoVar 
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning NanoVar...', file=output)
-    command = 'nanovar -t ' + str(args.threads) +  ' ' + \
+    if args.long is not None and args.data_type_sv == "pacbio":
+        command = 'nanovar -t ' + str(args.threads) +  ' ' + \
+            input_reads  + ' ' + \
+            reference + ' ' + \
+            nanovar_outdir + \
+            ' -x pacbio-clr' + \
+            ' -c ' + str(args.mincov_sv) + \
+            ' -l ' + str(args.minlen_sv)
+    else:
+        command = 'nanovar -t ' + str(args.threads) +  ' ' + \
             input_reads  + ' ' + \
             reference + ' ' + \
             nanovar_outdir + \

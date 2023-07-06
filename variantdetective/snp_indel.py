@@ -130,10 +130,17 @@ def snp_indel(args, snp_input, output=sys.stderr):
         run_process(command)
     except:
         pass
-    
+    try:
+        command = 'samtools faidx ' + reference
+        run_process(command)
+    except:
+        pass
+
+
     # Run Freebayes
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning Freebayes...', file=output)
-    command = 'freebayes -f ' + reference + ' ' + \
+    command = 'freebayes-parallel <(fasta_generate_regions.py ' + reference + '.fai 100000) ' + \
+            str(args.threads) + ' -f ' + reference + ' ' + \
             snp_indel_outdir + '/alignment.rg.sorted.bam -p 1 > ' + \
             freebayes_outdir + '/freebayes.vcf'
     run_process(command)
@@ -152,12 +159,11 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     # Run HaplotypeCaller
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning HaplotypeCaller...', file=output)
-    command = 'gatk HaplotypeCaller -R ' + reference + \
+    command = 'gatk HaplotypeCaller --java-options "-Xmx96G -Xss9g" -R ' + reference + \
         ' -I ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -O ' + haplotypecaller_outdir + '/haplotypecaller.vcf' + \
         ' -ploidy 1'
     run_process(command)
-
     command = 'vcffilter -f "QD > ' + str(args.minqual_snp) + '" ' + haplotypecaller_outdir + '/haplotypecaller.vcf > ' + \
         haplotypecaller_outdir + '/haplotypecaller.filt.vcf'
     run_process(command)

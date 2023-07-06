@@ -3,11 +3,11 @@ mkdir -p $dir
 cp parameter_sv.txt $dir/parameter_sv.txt
 cp parameter_snp.txt $dir/parameter_snp.txt
 j=50X
-for i in {1,2,3,4,5}
+for i in {2,5}
 do
-  #SURVIVOR simSV GCA_000011705.1.fa parameter_snp.txt 0.00017 0 $dir/sim_snp_${i}
-  #SURVIVOR simSV $dir/sim_snp_${i}.fasta parameter_sv.txt 0 0 $dir/sim_snp_sv_${i}
-    ./variantdetective.py snp_indel \
+  SURVIVOR simSV GCA_000011705.1.fa parameter_snp.txt 0.00017 0 $dir/sim_snp_${i}
+  SURVIVOR simSV $dir/sim_snp_${i}.fasta parameter_sv.txt 0 0 $dir/sim_snp_sv_${i}
+    ./variantdetective.py structural_variant \
     	-g $dir/sim_snp_sv_${i}.fasta \
     	-r GCA_000011705.1.fa \
     	-t 24 \

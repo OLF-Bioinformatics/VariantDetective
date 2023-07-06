@@ -100,6 +100,8 @@ def structural_variant_subparser(subparsers):
                                 help='Fragment length distribution (mean,stdev) (default: %(default)s)')
     
     nanovar_args = group.add_argument_group('Structural Variant Call')
+    nanovar_args.add_argument("--data_type_sv", type=str, default='ont', choices=['ont', 'pacbio'],
+                                help="Type of long-read data (ont or pacbio) (default: %(default)s)")
     nanovar_args.add_argument("--mincov_sv", type=int, default=2,
                                 help='Minimum number of reads required to call variant (default: %(default)i)')
     nanovar_args.add_argument("--minlen_sv", type=int, default=25,
@@ -154,6 +156,8 @@ def all_variants_subparser(subparsers):
                                 help='Fragment length distribution (mean,stdev) (default: %(default)s)')
     
     nanovar_args = group.add_argument_group('Structural Variant Call')
+    nanovar_args.add_argument("--data_type_sv", type=str, default='ont', choices=['ont', 'pacbio'],
+                                help="Type of long-read data (ont or pacbio) (default: %(default)s)")
     nanovar_args.add_argument("--mincov_sv", type=int, default=2,
                                 help='Minimum number of reads required to call SV (default: %(default)i)')
     nanovar_args.add_argument("--minlen_sv", type=int, default=25,

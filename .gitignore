@@ -5,6 +5,7 @@
 *.fq*
 *.fna*
 tmp*/
+benchmark*
 benchmarking/benchmark*/*
 !benchmarking/benchmark*/*.sh
 __pycache__/

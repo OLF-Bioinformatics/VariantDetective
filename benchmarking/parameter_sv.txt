@@ -1,16 +1,16 @@
 PARAMETER FILE: DO JUST MODIFY THE VALUES AND KEEP THE SPACES!
 DUPLICATION_minimum_length: 1000
 DUPLICATION_maximum_length: 20000
-DUPLICATION_number: 15
+DUPLICATION_number: 3
 INDEL_minimum_length: 1000
 INDEL_maximum_length: 30000
-INDEL_number: 30
+INDEL_number: 85
 TRANSLOCATION_minimum_length: 10000
 TRANSLOCATION_maximum_length: 30000
 TRANSLOCATION_number: 1
 INVERSION_minimum_length: 500
 INVERSION_maximum_length: 10000
-INVERSION_number: 20
+INVERSION_number: 10
 INV_del_minimum_length: 600
 INV_del_maximum_length: 800
 INV_del_number: 0
