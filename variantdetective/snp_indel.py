@@ -165,7 +165,8 @@ def snp_indel(args, snp_input, output=sys.stderr):
     ninety_percent_memory_gb = 0.9 * total_memory_gb
     xmx_value = f"-Xmx{int(ninety_percent_memory_gb)}G"
     xss_value = f"-Xss{int(ninety_percent_memory_gb // 100)}M"  # Assuming we use 1% of Xmx for Xss, and convert to MB
-
+    if xss_value == "-Xss0M":
+        xss_value = "-Xss1M"
     command = f'gatk HaplotypeCaller --java-options "{xmx_value} {xss_value}" -R ' + reference + \
         ' -I ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -O ' + haplotypecaller_outdir + '/haplotypecaller.vcf' + \
