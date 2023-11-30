@@ -4,15 +4,20 @@ This program is designed to identify short variants and structural variants. Var
 
 This tool makes use of other open-source variant callers and creates consensus sets in order to validate a variant. Summary files for short variants and structural variants are generated outlining the different types of variants found in the sample.
 
+## Author
+
+Phil Charron \<<phil.charron@inspection.gc.ca>\>
+
 ## Table of Contents
-  - [Requirements](#requirements)
   - [Installation](#installation)
+     - [Installation from Source](#installation-from-source)
      - [Conda Installation](#conda-installation)
   - [Quick Usage](#quick-usage)
   - [List of Commands](#list-of-commands)
   - [Variant Callers](#variant-callers)
      - [Short Variant Callers](#short-variant-callers)
      - [Structural Variant Callers](#structural-variant-callers)
+  - [Long Read Simulator](#long-read-simulator)
   - [Parameters](#parameters)
   - [Outputs](#outputs)
      - [Output files - snp_indel directory](#output-files---snp_indel-directory)
@@ -20,23 +25,76 @@ This tool makes use of other open-source variant callers and creates consensus s
   - [Reporting Issues](#reporting-issues)
   - [Citing VariantDetective](#citing-variantdetective)
 
-## Requirements
-MUST ADD REQUIREMENTS
 
 ## Installation
-ADD INSTALLATION FROM SOURCE
+
+All software and tools used by VariantDetective can be found in the [spec-file.txt](spec-file.txt). VariantDetective can be installed via pip after creating the conda environment to support it or via conda.
+
+### Installation from Source
+VariantDetective can be installed from source using the following method.
+```
+# Download VariantDetective repository
+git clone https://github.com/OLF-Bioinformatics/VariantDetective.git
+cd VariantDetective
+# Create conda variant for tools
+conda create -n variantdetective -y && conda activate variantdetective
+# Install specific versions of tools
+conda install -n variantdetective --file spec-file.txt
+# Install VariantDetective
+pip install -e .
+```
+
 ### Conda Installation
-`conda install -c bioconda -c charronp variantdetective`
+```
+conda create -n vd -y
+conda activate vd
+conda install -c bioconda -c conda-forge -c charronp variantdetective
+```
 
 ## Quick Usage
-MUST ADD QUICK USAGE
+
+**Finding snps/indels and structural variants from an assembled genome (FASTA)**
+
+```
+variantdetective all_variants -r REFERENCE.fasta -g SAMPLE.fasta
+```
+
+**Finding snps/indels and structural variants from raw reads (FASTQ)**
+
+```
+variantdetective all_variants -r REFERENCE.fasta -1 SHORT_READ_1.fastq -2 SHORT_READ_2.fastq -l LONG_READ.fastq
+```
+
+**Finding snps/indels from an assembled genome (FASTA)**
+
+```
+variantdetective snp_indel -r REFERENCE.fasta -g SAMPLE.fasta
+```
+
+**Finding snps/indels from raw reads (FASTQ)**
+
+```
+variantdetective snp_indel -r REFERENCE.fasta -1 SHORT_READ_1.fastq -2 SHORT_READ_2.fastq 
+```
+
+**Finding structural variants from an assembled genome (FASTA)**
+
+```
+variantdetective structural_variant -r REFERENCE.fasta -g SAMPLE.fasta
+```
+
+**Finding structural variants from raw reads (FASTQ)**
+
+```
+variantdetective structural_variant -r REFERENCE.fasta -l LONG_READ.fastq
+```
 
 ## List of Commands
 | Command | Description |
 | --- | --- |
-| `variantdetective-runner.py all_variants` | Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels. |
-| `variantdetective-runner.py structural_variant` | Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs. |
-| `variantdetective-runner.py snp_indel` |  Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
+| `variantdetective all_variants` | Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels. |
+| `variantdetective structural_variant` | Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs. |
+| `variantdetective snp_indel` |  Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
 
 ## Variant Callers
 VariantDetective makes use of published open-source variant callers and creates consensus sets in order to validate a variant.
@@ -124,10 +182,11 @@ All input files will be copied to the output folder. Within the output folder, d
 | `nanovar/` | Directory containing files related to NanoVar variant calling |
 | `svim/` | Directory containing files related to SVIM variant calling |
 
+
 ## Reporting Issues
 
 If you have any issues installing or running VariantDetective, or would like a new feature added to the tool, please open an issue here on GitHub. 
 
 ## Citing VariantDetective
 
-Citation will be included later.
+Our manuscript describing this tool is currently under review.
