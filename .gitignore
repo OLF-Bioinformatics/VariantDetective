@@ -10,3 +10,4 @@ benchmarking/benchmark*/*
 !benchmarking/benchmark*/*.sh
 __pycache__/
 todo.txt
+recipe/

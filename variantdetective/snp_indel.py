@@ -10,6 +10,8 @@ import sys
 import io
 import pandas as pd
 import datetime
+import psutil
+import pkg_resources
 from .tools import get_new_filename, run_process
 
 
@@ -159,7 +161,12 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     # Run HaplotypeCaller
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning HaplotypeCaller...', file=output)
-    command = 'gatk HaplotypeCaller --java-options "-Xmx96G -Xss9g" -R ' + reference + \
+    total_memory_gb = psutil.virtual_memory().total / (1024 ** 3)
+    ninety_percent_memory_gb = 0.9 * total_memory_gb
+    xmx_value = f"-Xmx{int(ninety_percent_memory_gb)}G"
+    xss_value = f"-Xss{int(ninety_percent_memory_gb // 100)}M"  # Assuming we use 1% of Xmx for Xss, and convert to MB
+
+    command = f'gatk HaplotypeCaller --java-options "{xmx_value} {xss_value}" -R ' + reference + \
         ' -I ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -O ' + haplotypecaller_outdir + '/haplotypecaller.vcf' + \
         ' -ploidy 1'
@@ -178,10 +185,11 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     # Run Clair3
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning Clair3...', file=output)
+    model_path = pkg_resources.resource_filename('variantdetective', 'clair3_models/ilmn')
     command = 'run_clair3.sh -f ' + reference + \
         ' -b ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -o ' + clair3_outdir + \
-        ' -p "ilmn" -m variantdetective/clair3_models/ilmn --include_all_ctgs ' + \
+        ' -p "ilmn" -m ' + model_path + ' --include_all_ctgs ' + \
         ' --no_phasing_for_fa --haploid_precise -t ' + str(args.threads)
     run_process(command)
     

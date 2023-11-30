@@ -13,7 +13,7 @@ import shutil
 import sys
 import datetime
 
-from .tools import get_new_filename
+from variantdetective.tools import get_new_filename
 from .validate_inputs import validate_inputs
 from .version import __version__
 

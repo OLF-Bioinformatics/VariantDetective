@@ -1,9 +1,0 @@
-LICENSE
-README.md
-setup.py
-variantdetective/variantdetective.egg-info/PKG-INFO
-variantdetective/variantdetective.egg-info/SOURCES.txt
-variantdetective/variantdetective.egg-info/dependency_links.txt
-variantdetective/variantdetective.egg-info/not-zip-safe
-variantdetective/variantdetective.egg-info/requires.txt
-variantdetective/variantdetective.egg-info/top_level.txt
