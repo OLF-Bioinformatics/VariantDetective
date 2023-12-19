@@ -29,6 +29,7 @@ def main(output=sys.stderr):
     
     elif args.subparser_name == 'all_variants':
         check_all_variants_args(args)
+    
 
     create_outdir(args)
     copy_inputs(args)
@@ -55,6 +56,7 @@ def parse_args(args):
     all_variants_subparser(subparsers)
     structural_variant_subparser(subparsers)
     snp_indel_subparser(subparsers)
+    combine_variants_subparser(subparsers)
 
 
 
@@ -237,6 +239,24 @@ def snp_indel_subparser(subparsers):
     other_args.add_argument('-t', '--threads', type=int, default=1,
                                 help='Number of threads used for job (default: %(default)i)')
 
+def combine_variants_subparser(subparsers):
+    help = 'Combine VCF files predicted using other tools.' 
+    definition = 'Combine VCF files predicted using other tools.'
+
+    group = subparsers.add_parser('combine_variants', description=definition,
+                                  help=help, 
+                                  formatter_class=argparse.HelpFormatter,
+                                  add_help=False)
+    help_args = group.add_argument_group('Help')
+    help_args.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                            help='Show this help message and exit')
+    help_args.add_argument('-v', '--version', action='version',
+                            version='VariantDetective v' + __version__,
+                            help="Show program version number and exit")
+
+    input_args = group.add_argument_group('Input')
+    input_args.add_argument('--snp_vcf', type=str,
+                               help="Path to SNP VCF files. Separate each VCF file path with a space.")   
 
 def check_all_variants_args(args):
     if args.long is not None and not pathlib.Path(args.long).is_file():
