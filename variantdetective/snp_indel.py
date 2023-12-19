@@ -238,8 +238,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
             snp_indel_outdir + '/snp_0_2.vcf.gz'
         run_process(command)
     if not os.path.exists(snp_indel_outdir + '/snp_1_2.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2        model_path = bin_output + ${model_suffix}"
-.vcf.gz | bgzip -c > ' + \
+        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
             snp_indel_outdir + '/snp_1_2.vcf.gz'
         run_process(command)
     if not os.path.exists(snp_indel_outdir + '/snp_0.vcf.gz'):

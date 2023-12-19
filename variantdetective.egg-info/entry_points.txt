@@ -1,0 +1,3 @@
+[console_scripts]
+variantdetective = variantdetective.main:main
+
