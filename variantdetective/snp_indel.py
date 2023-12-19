@@ -216,14 +216,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     command = 'bgzip -c -@ ' + str(args.threads) + ' ' + \
         clair3_outdir + '/clair3.filt.vcf > ' + \
-        clair3_outdir + '/cla
-def run_process(command):
-    process = Popen([command],
-                    universal_newlines=True, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')
-    output, error = process.communicate()
-    
-    if process.returncode != 0:
-        raise Exception(error)ir3.filt.vcf.gz'
+        clair3_outdir + '/clair3.filt.vcf.gz'
     run_process(command)
 
     command = 'tabix -p vcf ' + clair3_outdir + '/clair3.filt.vcf.gz'
