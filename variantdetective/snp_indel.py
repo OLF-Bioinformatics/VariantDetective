@@ -188,14 +188,18 @@ def snp_indel(args, snp_input, output=sys.stderr):
     # Run Clair3
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning Clair3...', file=output)
     #model_path = pkg_resources.resource_filename('variantdetective', 'clair3_models/ilmn')
-    command = "dirname $(which run_clair3.sh)"
-    # Run the command and capture the output
-    try:
-        bin_output = subprocess.check_output(command, shell=True, universal_newlines=True).strip()
-    except subprocess.CalledProcessError as e:
-        print("Error:", e)
     
-    model_path = bin_output + "/models/ilmn"
+    if args.custom_clair3_model is not None:
+        model_path = args.custom_clair3_model
+
+    else:
+        command = "dirname $(which run_clair3.sh)"
+        # Run the command and capture the output
+        try:
+            bin_output = subprocess.check_output(command, shell=True, universal_newlines=True).strip()
+        except subprocess.CalledProcessError as e:
+            print("Error:", e)
+        model_path = bin_output + "/models/ilmn"
 
     command = 'run_clair3.sh -f ' + reference + \
         ' -b ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \

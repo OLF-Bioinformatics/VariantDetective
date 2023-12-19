@@ -176,7 +176,8 @@ def all_variants_subparser(subparsers):
                                 help='Choose which assembler (bwa or minimap2) to use when using paired-end short reads (default: %(default)s)')
     snp_args.add_argument("--snp_consensus", type=int, default=2,
                                 help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list (default: %(default)i)')
-
+    snp_args.add_argument("--custom_clair3_model", type=str,
+                                help='Path to custom model for Clair3 variant calling (such as ones from Rerio)')
 
     other_args = group.add_argument_group('Other')
     other_args.add_argument('-o', "--out", type=str, default='./',
@@ -227,7 +228,9 @@ def snp_indel_subparser(subparsers):
                                 help='Choose which assembler (bwa or minimap2) to use when using paired-end short reads (default: %(default)s)')
     snp_args.add_argument("--snp_consensus", type=int, default=2,
                                 help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list (default: %(default)i)')
-
+    snp_args.add_argument("--custom_clair3_model", type=str,
+                                help='Path to custom model for Clair3 variant calling (such as ones from Rerio)')
+    
     other_args = group.add_argument_group('Other')
     other_args.add_argument('-o', "--out", type=str, default='./',
                                 help='Output directory. Will be created if it does not exist')
