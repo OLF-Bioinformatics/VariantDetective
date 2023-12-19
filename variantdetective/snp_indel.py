@@ -12,6 +12,7 @@ import pandas as pd
 import datetime
 import psutil
 import pkg_resources
+import subprocess
 from .tools import get_new_filename, run_process
 
 
@@ -98,7 +99,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
             run_process(command)
             command = 'bwa mem -t ' + str(args.threads) + ' '
         command += reference + ' ' + snp_input[0] + ' ' + snp_input[1] + \
-        ' | samtools view -Sb - -@ ' + str(args.threads) + \
+        ' | samtools view -SbCLAIR_BIN_DIR=\$(dirname \$(which run_clair3.sh)) - -@ ' + str(args.threads) + \
         ' | samtools sort -n - -@ ' +  str(args.threads) + \
         ' | samtools fixmate -m - - -@ ' + str(args.threads) + \
         ' | samtools sort - -@ ' + str(args.threads) + \
@@ -164,7 +165,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
     total_memory_gb = psutil.virtual_memory().total / (1024 ** 3)
     ninety_percent_memory_gb = 0.9 * total_memory_gb
     xmx_value = f"-Xmx{int(ninety_percent_memory_gb)}G"
-    xss_value = f"-Xss{int(ninety_percent_memory_gb // 100)}M"  # Assuming we use 1% of Xmx for Xss, and convert to MB
+    xss_value = f"-Xss{int(ninety_percent_memory_gb // 10)}M"  # Assuming we use 10% of Xmx for Xss, and convert to MB
     if xss_value == "-Xss0M":
         xss_value = "-Xss1M"
     command = f'gatk HaplotypeCaller --java-options "{xmx_value} {xss_value}" -R ' + reference + \
@@ -186,7 +187,16 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     # Run Clair3
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tRunning Clair3...', file=output)
-    model_path = pkg_resources.resource_filename('variantdetective', 'clair3_models/ilmn')
+    #model_path = pkg_resources.resource_filename('variantdetective', 'clair3_models/ilmn')
+    command = "dirname $(which run_clair3.sh)"
+    # Run the command and capture the output
+    try:
+        bin_output = subprocess.check_output(command, shell=True, universal_newlines=True).strip()
+    except subprocess.CalledProcessError as e:
+        print("Error:", e)
+    
+    model_path = bin_output + "/models/ilmn"
+
     command = 'run_clair3.sh -f ' + reference + \
         ' -b ' + snp_indel_outdir + '/alignment.rg.sorted.bam' + \
         ' -o ' + clair3_outdir + \
@@ -206,7 +216,14 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     command = 'bgzip -c -@ ' + str(args.threads) + ' ' + \
         clair3_outdir + '/clair3.filt.vcf > ' + \
-        clair3_outdir + '/clair3.filt.vcf.gz'
+        clair3_outdir + '/cla
+def run_process(command):
+    process = Popen([command],
+                    universal_newlines=True, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')
+    output, error = process.communicate()
+    
+    if process.returncode != 0:
+        raise Exception(error)ir3.filt.vcf.gz'
     run_process(command)
 
     command = 'tabix -p vcf ' + clair3_outdir + '/clair3.filt.vcf.gz'
@@ -228,7 +245,8 @@ def snp_indel(args, snp_input, output=sys.stderr):
             snp_indel_outdir + '/snp_0_2.vcf.gz'
         run_process(command)
     if not os.path.exists(snp_indel_outdir + '/snp_1_2.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
+        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2        model_path = bin_output + ${model_suffix}"
+.vcf.gz | bgzip -c > ' + \
             snp_indel_outdir + '/snp_1_2.vcf.gz'
         run_process(command)
     if not os.path.exists(snp_indel_outdir + '/snp_0.vcf.gz'):
