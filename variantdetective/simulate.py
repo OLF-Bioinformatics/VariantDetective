@@ -1,8 +1,8 @@
 """
 This file contains code required to run the long read simulation of VariantDetective.
 
-Portions Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
-https://github.com/philcharron-cfia/VariantDetective
+Copyright (C) 2024 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/OLF-Bioinformatics/VariantDetective
 Portions Copyright (C) 2018 Ryan Wick (rrwick@gmail.com)
 https://github.com/rrwick/Badread
 """

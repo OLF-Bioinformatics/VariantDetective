@@ -1,8 +1,8 @@
 """
 This file contains code for the snp_indel subcommand.
 
-Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
-https://github.com/philcharron-cfia/VariantDetective
+Copyright (C) 2024 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/OLF-Bioinformatics/VariantDetective
 """
 
 import os
@@ -11,63 +11,8 @@ import io
 import pandas as pd
 import datetime
 import psutil
-import pkg_resources
 import subprocess
-from .tools import get_new_filename, run_process
-
-
-def read_vcf(path):
-    with open(path, 'r') as f:
-        lines = [l for l in f if not l.startswith('##')]
-    return pd.read_csv(
-        io.StringIO(''.join(lines)),
-        dtype={'#CHROM': str, 'POS': int, 'ID': str, 'REF': str, 'ALT': str,
-            'QUAL': str, 'FILTER': str, 'INFO': str},
-        sep='\t'
-    ).rename(columns={'#CHROM': 'CHROM'})
-
-def generate_tab_csv_summary(vcf, output_dir):
-    CHROM = vcf.iloc[:,0]
-    POS = vcf.iloc[:,1]
-    FORMAT_ID = vcf.iloc[:,8].str.split(':', expand=True)
-    FORMAT = vcf.iloc[:,9].str.split(':', expand=True)
-    INFO = vcf.iloc[:,7].str.split(';', expand=True)
-    REF = vcf.iloc[:,3]
-    ALT = vcf.iloc[:,4]
-    SUPPORT = pd.Series([None] * len(vcf), name='SUPPORT')
-    TYPE = INFO.iloc[:,40].str.split('=',expand=True).iloc[:,1]
-    TYPE.name = 'TYPE'
-    for i, v in TYPE.items():
-        try:
-            AD_index =list(FORMAT_ID.iloc[i]).index('AD')
-            RAW_SUPPORT = FORMAT.iloc[i,AD_index].split(",")
-            SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
-        except ValueError:
-            AF_index =list(FORMAT_ID.iloc[i]).index('AF')
-            DP_index =list(FORMAT_ID.iloc[i]).index('DP')
-            REF_COUNT = round(int(FORMAT.iloc[i,DP_index]) - (float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index])))
-            ALT_COUNT = round(float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index]))
-            SUPPORT[i] = "REF=" + str(REF_COUNT) + ";ALT=" + str(ALT_COUNT)
-        if (v == None):
-            if (len(REF[i]) < len(ALT[i])):
-                TYPE[i] = 'ins'
-            elif (len(REF[i]) > len(ALT[i])):
-                TYPE[i] = 'del'
-            elif (len(REF[i]) == 1):
-                TYPE[i] = 'snp'
-            else:
-                TYPE[i] = 'complex'
-
-    TAB_DATA = pd.concat([CHROM, POS, TYPE, REF, ALT, SUPPORT], axis=1)
-
-    VARIANT_TYPES = pd.Series(['SNP', 'DEL', 'INS', 'MNP', 'COMPLEX','TOTAL'], name = 'TYPE')
-    VARIANT_DATA = pd.Series([(TYPE=='snp').sum(), (TYPE=='del').sum(), (TYPE=='ins').sum(), (TYPE=='mnp').sum(), (TYPE=='complex').sum(), len(TYPE)], name = 'COUNT')
-    SUMMARY_DATA = pd.concat([VARIANT_TYPES, VARIANT_DATA], axis=1)
-
-    TAB_DATA.to_csv(output_dir + '/snp_final.csv', index=False)
-    TAB_DATA.to_csv(output_dir + '/snp_final.tab', sep='\t', index=False)
-    SUMMARY_DATA.to_csv(output_dir + '/snp_final_summary.txt', sep='\t', index=False)
-
+from .tools import get_new_filename, run_process, read_vcf, generate_tab_csv_snp_summary
 
 def snp_indel(args, snp_input, output=sys.stderr):
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tStarting snp_indel tool', file=output)
@@ -306,4 +251,4 @@ def snp_indel(args, snp_input, output=sys.stderr):
         'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
     run_process(command)
     
-    generate_tab_csv_summary(read_vcf(snp_indel_outdir + '/snp_final.vcf'), snp_indel_outdir)
+    generate_tab_csv_snp_summary(read_vcf(snp_indel_outdir + '/snp_final.vcf'), snp_indel_outdir)

@@ -2,8 +2,8 @@
 This file contains the main (entry-point) function into VariantDetective.
 It can be run using the variantdetective.py script. 
 
-Copyright (C) 2022 Phil Charron (phil.charron@inspection.gc.ca)
-https://github.com/philcharron-cfia/VariantDetective
+Copyright (C) 2024 Phil Charron (phil.charron@inspection.gc.ca)
+https://github.com/OLF-Bioinformatics/VariantDetective
 """
 
 import argparse
@@ -29,10 +29,13 @@ def main(output=sys.stderr):
     
     elif args.subparser_name == 'all_variants':
         check_all_variants_args(args)
-
+    
+    elif args.subparser_name == 'combine_variants':
+        check_combine_variants_args(args)
+    
     create_outdir(args)
     copy_inputs(args)
-    print(str(datetime.datetime.now().replace(microsecond=0)) + '\tValidating input files...', file=output)
+    #print(str(datetime.datetime.now().replace(microsecond=0)) + '\tValidating input files...', file=output)
     validate_inputs(args, output=output)    
 
 def parse_args(args):
@@ -55,9 +58,7 @@ def parse_args(args):
     all_variants_subparser(subparsers)
     structural_variant_subparser(subparsers)
     snp_indel_subparser(subparsers)
-
-
-
+    combine_variants_subparser(subparsers)
 
     # If no arguments were used, print the base-level help.
     if len(args) == 0:
@@ -237,6 +238,38 @@ def snp_indel_subparser(subparsers):
     other_args.add_argument('-t', '--threads', type=int, default=1,
                                 help='Number of threads used for job (default: %(default)i)')
 
+def combine_variants_subparser(subparsers):
+    help = 'Combine VCF files predicted using other tools.' 
+    definition = 'Combine VCF files predicted using other tools.'
+
+    group = subparsers.add_parser('combine_variants', description=definition,
+                                  help=help, 
+                                  formatter_class=argparse.HelpFormatter,
+                                  add_help=False)
+    help_args = group.add_argument_group('Help')
+    help_args.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                            help='Show this help message and exit')
+    help_args.add_argument('-v', '--version', action='version',
+                            version='VariantDetective v' + __version__,
+                            help="Show program version number and exit")
+
+    input_args = group.add_argument_group('Input')
+    input_args.add_argument('--snp_vcf', type=str, nargs='+',
+                            help="Path to SNP VCF files. Separate each VCF file path with a space.")   
+    input_args.add_argument("--snp_consensus", type=int,
+                            help='Specifies the minimum number of tools required to detect an SNP or Indel to include it in the consensus list.')
+    input_args.add_argument('--sv_vcf', type=str, nargs='+',
+                            help="Path to SV VCF files. Separate each VCF file path with a space.")   
+    input_args.add_argument("--sv_consensus", type=int,
+                            help='Specifies the minimum number of tools required to detect an SV to include it in the consensus list.')
+    input_args.add_argument("--minlen_sv", type=int, default=25,
+                                help='Minimum length of SV to be detected (default: %(default)i)')
+    
+    other_args = group.add_argument_group('Other')
+    other_args.add_argument('-o', "--out", type=str, default='./',
+                                help='Output directory. Will be created if it does not exist')
+    other_args.add_argument('-t', '--threads', type=int, default=1,
+                                help='Number of threads used for job (default: %(default)i)')
 
 def check_all_variants_args(args):
     if args.long is not None and not pathlib.Path(args.long).is_file():
@@ -347,6 +380,31 @@ def check_snp_indel_args(args):
     if args.frag_length_stdev < 0:
         sys.exit('Error: read length stdev cannot be negative')
 
+def check_combine_variants_args(args):
+    if args.snp_vcf is not None:
+        num_vcf = len(args.snp_vcf)
+        if num_vcf == 1:
+            sys.exit('Error: must have more than 1 VCF to create consensus set.')
+        if args.snp_consensus is None:
+            sys.exit('Error: must specify the minimum number of tools required to include SNP in the consensus list using --snp_consensus.')
+        if args.snp_consensus > num_vcf:
+            sys.exit('Error: minimum number of consensus VCF files is larger than number of VCF files provided.')
+        for vcf_file in args.snp_vcf:
+            if not pathlib.Path(vcf_file).is_file():
+                sys.exit(f'Error: VCF file {vcf_file} does not exist.')
+        
+    if args.sv_vcf is not None:
+        num_vcf = len(args.sv_vcf)
+        if num_vcf == 1:
+            sys.exit('Error: must have more than 1 VCF to create consensus set.')
+        if args.sv_consensus is None:
+            sys.exit('Error: must specify the minimum number of tools required to include SNP in the consensus list using --snp_consensus.')
+        if args.sv_consensus > num_vcf:
+            sys.exit('Error: minimum number of consensus VCF files is larger than number of VCF files provided.')
+        for vcf_file in args.sv_vcf:
+            if not pathlib.Path(vcf_file).is_file():
+                sys.exit(f'Error: VCF file {vcf_file} does not exist.')
+
 def check_python_version():
     if sys.version_info.major < 3 or sys.version_info.minor < 6:
         sys.exit('Error: VariantDetective requires Python 3.6 or later')
@@ -357,35 +415,38 @@ def copy_file(file1, file2):
     except shutil.SameFileError:
         pass
 
-
 def copy_inputs(args):
-    copy_file(args.reference, get_new_filename(args.reference, args.out))
-    if args.genome is not None:
-        copy_file(args.genome, get_new_filename(args.genome, args.out))
-    if args.subparser_name == 'structural_variant':
-        if args.long is not None:
-            copy_file(args.long, get_new_filename(args.long, args.out))    
-    elif args.subparser_name == 'snp_indel':
-        if args.short1 is not None:
-            copy_file(args.short1, get_new_filename(args.short1, args.out))
-        if args.short2 is not None:
-            copy_file(args.short2, get_new_filename(args.short2, args.out))
+    if args.subparser_name != 'combine_variants': 
+        copy_file(args.reference, get_new_filename(args.reference, args.out))
+        if args.genome is not None:
+            copy_file(args.genome, get_new_filename(args.genome, args.out))
+        if args.subparser_name == 'structural_variant':
+            if args.long is not None:
+                copy_file(args.long, get_new_filename(args.long, args.out))    
+        elif args.subparser_name == 'snp_indel':
+            if args.short1 is not None:
+                copy_file(args.short1, get_new_filename(args.short1, args.out))
+            if args.short2 is not None:
+                copy_file(args.short2, get_new_filename(args.short2, args.out))
+        else:
+            if args.short1 is not None:
+                copy_file(args.short1, get_new_filename(args.short1, args.out))
+            if args.short2 is not None:
+                copy_file(args.short2, get_new_filename(args.short2, args.out))
+            if args.long is not None:
+                copy_file(args.long, get_new_filename(args.long, args.out))
     else:
-        if args.short1 is not None:
-            copy_file(args.short1, get_new_filename(args.short1, args.out))
-        if args.short2 is not None:
-            copy_file(args.short2, get_new_filename(args.short2, args.out))
-        if args.long is not None:
-            copy_file(args.long, get_new_filename(args.long, args.out))
-        
+        if args.snp_vcf is not None:
+            for vcf_file in args.snp_vcf:
+                copy_file(vcf_file, get_new_filename(vcf_file, args.out))
+        if args.sv_vcf is not None:
+            for vcf_file in args.sv_vcf:
+                copy_file(vcf_file, get_new_filename(vcf_file, args.out))
+
 def create_outdir(args):
     if not os.path.isdir(args.out):
         os.makedirs(args.out)
     
-
-
-
-
 class NoSubparsersMetavarFormatter(argparse.HelpFormatter):
     """
     This is a custom formatter class for argparse. It allows for some custom
@@ -403,6 +464,7 @@ class NoSubparsersMetavarFormatter(argparse.HelpFormatter):
         return result
     def _format_action_invocation(self, action):
         if isinstance(action, argparse._SubParsersAction):
+
             # remove metavar and help line
             return ""
         return super()._format_action_invocation(action)

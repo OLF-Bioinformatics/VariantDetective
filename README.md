@@ -53,40 +53,52 @@ conda install -c bioconda -c conda-forge -c charronp variantdetective
 
 ## Quick Usage
 
-**Finding snps/indels and structural variants from an assembled genome (FASTA)**
+**Find snps/indels and structural variants from an assembled genome (FASTA)**
 
 ```
 variantdetective all_variants -r REFERENCE.fasta -g SAMPLE.fasta
 ```
 
-**Finding snps/indels and structural variants from raw reads (FASTQ)**
+**Find snps/indels and structural variants from raw reads (FASTQ)**
 
 ```
 variantdetective all_variants -r REFERENCE.fasta -1 SHORT_READ_1.fastq -2 SHORT_READ_2.fastq -l LONG_READ.fastq
 ```
 
-**Finding snps/indels from an assembled genome (FASTA)**
+**Find snps/indels from an assembled genome (FASTA)**
 
 ```
 variantdetective snp_indel -r REFERENCE.fasta -g SAMPLE.fasta
 ```
 
-**Finding snps/indels from raw reads (FASTQ)**
+**Find snps/indels from raw reads (FASTQ)**
 
 ```
 variantdetective snp_indel -r REFERENCE.fasta -1 SHORT_READ_1.fastq -2 SHORT_READ_2.fastq 
 ```
 
-**Finding structural variants from an assembled genome (FASTA)**
+**Find structural variants from an assembled genome (FASTA)**
 
 ```
 variantdetective structural_variant -r REFERENCE.fasta -g SAMPLE.fasta
 ```
 
-**Finding structural variants from raw reads (FASTQ)**
+**Find structural variants from raw reads (FASTQ)**
 
 ```
 variantdetective structural_variant -r REFERENCE.fasta -l LONG_READ.fastq
+```
+
+**Combine SNP VCF files predicted from other tools and get consensus set of minimum 2 callers**
+
+```
+variantdetective combine_variants --snp_vcf  TOOL1.vcf TOOL2.vcf TOOL3.VCF --snp_consensus 2
+```
+
+**Combine SV VCF files predicted from other tools and get consensus set of minimum 2 callers**
+
+```
+variantdetective combine_variants --sv_vcf  TOOL1.vcf TOOL2.vcf TOOL3.VCF --sv_consensus 2
 ```
 
 ## List of Commands
@@ -94,7 +106,8 @@ variantdetective structural_variant -r REFERENCE.fasta -l LONG_READ.fastq
 | --- | --- |
 | `variantdetective all_variants` | Identify structural variants (SV) from long reads (FASTQ) and SNPs/indels from short reads (FASTQ), or both types of variants from genome sequence (FASTA). If genome sequence (FASTA) is provided, reads will be simulated to predict SV, SNPs and indels. |
 | `variantdetective structural_variant` | Identify structural variants (SV) from long reads (FASTQ) or genome sequence (FASTA).  If genome sequence (FASTA) is provided, reads will be simulated to predict SVs. |
-| `variantdetective snp_indel` |  Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
+| `variantdetective snp_indel` | Identify SNPs/indels from short reads (FASTQ) or genome sequence (FASTA). If genome sequence (FASTA) is provided instead, reads will be simulated to predict SNPs and indels. |
+| `variantdetective combine_variants` |  Combine SNPs/indels VCF files or SV VCF files predicted from other tools. |
 
 ## Variant Callers
 VariantDetective makes use of published open-source variant callers and creates consensus sets in order to validate a variant.
