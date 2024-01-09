@@ -44,7 +44,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
             run_process(command)
             command = 'bwa mem -t ' + str(args.threads) + ' '
         command += reference + ' ' + snp_input[0] + ' ' + snp_input[1] + \
-        ' | samtools view -SbCLAIR_BIN_DIR=\$(dirname \$(which run_clair3.sh)) - -@ ' + str(args.threads) + \
+        ' | samtools view -Sb - -@ ' + str(args.threads) + \
         ' | samtools sort -n - -@ ' +  str(args.threads) + \
         ' | samtools fixmate -m - - -@ ' + str(args.threads) + \
         ' | samtools sort - -@ ' + str(args.threads) + \
