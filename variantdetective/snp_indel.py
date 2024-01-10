@@ -185,7 +185,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     def create_vcf_if_not_exists(source_file, dest_file, snp_indel_outdir):
         if not os.path.exists(dest_file):
-            command = 'zgrep "#" ' + source_file + ' | bgzip -c > ' + snp_indel_outdir + '/' + dest_file
+            command = f'zcat {source_file} | grep "#" | bgzip -c > {snp_indel_outdir}/{dest_file}'
             run_process(command)
     
     def run_tabix(vcf_file, snp_indel_outdir):
@@ -204,7 +204,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
     if len(valid_vcf_files) > 0:
         command = 'vcf-isec -p ' + snp_indel_outdir + '/snp_ ' + ' '.join(valid_vcf_files)
         run_process(command)
-        
         if len(valid_vcf_files) == 3:
             source_vcf = 'snp_0_1_2.vcf.gz'
             dest_vcfs = ['snp_0_1.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
@@ -213,7 +212,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
             for dest_vcf in dest_vcfs:
                 create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
                 run_tabix(dest_vcf, snp_indel_outdir)
-
         elif len(valid_vcf_files) == 2:
             source_vcf = 'snp_0_1.vcf.gz'
             dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
@@ -221,8 +219,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
             run_tabix(source_vcf, snp_indel_outdir)
             for dest_vcf in dest_vcfs:
                 create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
-                run_tabix(dest_vcf, snp_indel_outdir)
-                
+                run_tabix(dest_vcf, snp_indel_outdir) 
         elif len(valid_vcf_files) == 1:
             source_vcf = 'snp_0.vcf.gz'
             dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_1.vcf.gz', 'snp_0_2.vcf.gz',
@@ -231,7 +228,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
             for dest_vcf in dest_vcfs:
                 create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
                 run_tabix(dest_vcf, snp_indel_outdir)
-
         if args.snp_consensus == 3:
             command = 'gunzip -c ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz > ' + \
                 snp_indel_outdir + '/snp_final.vcf' 
@@ -253,7 +249,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
                 snp_indel_outdir + '/snp_2.vcf.gz ' + \
                 '-o ' + snp_indel_outdir + '/snp_final.vcf'
             run_process(command)
-
         if len(valid_vcf_files) == 3:    
             command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
                     'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
