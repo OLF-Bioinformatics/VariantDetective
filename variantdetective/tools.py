@@ -87,46 +87,55 @@ def read_vcf(path):
     ).rename(columns={'#CHROM': 'CHROM'})
 
 def generate_tab_csv_snp_summary(vcf, output_dir):
-    CHROM = vcf.iloc[:,0]
-    POS = vcf.iloc[:,1]
-    FORMAT_ID = vcf.iloc[:,8].str.split(':', expand=True)
-    FORMAT = vcf.iloc[:,9].str.split(':', expand=True)
-    INFO = vcf.iloc[:,7].str.split(';', expand=True)
-    REF = vcf.iloc[:,3]
-    ALT = vcf.iloc[:,4]
-    SUPPORT = pd.Series([None] * len(vcf), name='SUPPORT')
-    TYPE = INFO.iloc[:,40].str.split('=',expand=True).iloc[:,1]
-    TYPE.name = 'TYPE'
-    for i, v in TYPE.items():
-        try:
-            AD_index =list(FORMAT_ID.iloc[i]).index('AD')
-            RAW_SUPPORT = FORMAT.iloc[i,AD_index].split(",")
-            SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
-        except ValueError:
-            AF_index =list(FORMAT_ID.iloc[i]).index('AF')
-            DP_index =list(FORMAT_ID.iloc[i]).index('DP')
-            REF_COUNT = round(int(FORMAT.iloc[i,DP_index]) - (float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index])))
-            ALT_COUNT = round(float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index]))
-            SUPPORT[i] = "REF=" + str(REF_COUNT) + ";ALT=" + str(ALT_COUNT)
-        if (v == None):
-            if (len(REF[i]) < len(ALT[i])):
-                TYPE[i] = 'ins'
-            elif (len(REF[i]) > len(ALT[i])):
-                TYPE[i] = 'del'
-            elif (len(REF[i]) == 1):
-                TYPE[i] = 'snp'
-            else:
-                TYPE[i] = 'complex'
+    if len(vcf) > 0:
+        CHROM = vcf.iloc[:,0]
+        POS = vcf.iloc[:,1]
+        FORMAT_ID = vcf.iloc[:,8].str.split(':', expand=True)
+        FORMAT = vcf.iloc[:,9].str.split(':', expand=True)
+        INFO = vcf.iloc[:,7].str.split(';', expand=True)
+        REF = vcf.iloc[:,3]
+        ALT = vcf.iloc[:,4]
+        SUPPORT = pd.Series([None] * len(vcf), name='SUPPORT')
+        TYPE = INFO.iloc[:,40].str.split('=',expand=True).iloc[:,1]
+        TYPE.name = 'TYPE'
+        for i, v in TYPE.items():
+            try:
+                AD_index =list(FORMAT_ID.iloc[i]).index('AD')
+                RAW_SUPPORT = FORMAT.iloc[i,AD_index].split(",")
+                SUPPORT[i] = "REF=" + RAW_SUPPORT[0] + ";ALT=" + RAW_SUPPORT[1]
+            except ValueError:
+                AF_index =list(FORMAT_ID.iloc[i]).index('AF')
+                DP_index =list(FORMAT_ID.iloc[i]).index('DP')
+                REF_COUNT = round(int(FORMAT.iloc[i,DP_index]) - (float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index])))
+                ALT_COUNT = round(float(FORMAT.iloc[i,AF_index]) * int(FORMAT.iloc[i,DP_index]))
+                SUPPORT[i] = "REF=" + str(REF_COUNT) + ";ALT=" + str(ALT_COUNT)
+            if (v == None):
+                if (len(REF[i]) < len(ALT[i])):
+                    TYPE[i] = 'ins'
+                elif (len(REF[i]) > len(ALT[i])):
+                    TYPE[i] = 'del'
+                elif (len(REF[i]) == 1):
+                    TYPE[i] = 'snp'
+                else:
+                    TYPE[i] = 'complex'
+        TAB_DATA = pd.concat([CHROM, POS, TYPE, REF, ALT, SUPPORT], axis=1)
+        VARIANT_TYPES = pd.Series(['SNP', 'DEL', 'INS', 'MNP', 'COMPLEX','TOTAL'], name = 'TYPE')
+        VARIANT_DATA = pd.Series([(TYPE=='snp').sum(), (TYPE=='del').sum(), (TYPE=='ins').sum(), (TYPE=='mnp').sum(), (TYPE=='complex').sum(), len(TYPE)], name = 'COUNT')
+        SUMMARY_DATA = pd.concat([VARIANT_TYPES, VARIANT_DATA], axis=1)
+        TAB_DATA.to_csv(output_dir + '/snp_final.csv', index=False)
+        TAB_DATA.to_csv(output_dir + '/snp_final.tab', sep='\t', index=False)
+        SUMMARY_DATA.to_csv(output_dir + '/snp_final_summary.txt', sep='\t', index=False)
+    else:
+        column_names_str= "CHROM POS TYPE REF ALT SUPPORT"
+        column_names = column_names_str.split()
+        TAB_DATA = pd.DataFrame(columns=column_names)
+        TAB_DATA.to_csv(output_dir + '/snp_final.csv', index=False)
+        TAB_DATA.to_csv(output_dir + '/snp_final.tab', sep='\t', index=False)
+        data = {"TYPE": ["SNP", "DEL", "INS", "MNP", "COMPLEX", "TOTAL"],
+                "COUNT": [0, 0, 0, 0, 0, 0]}
+        SUMMARY_DATA = pd.DataFrame(data)
+        SUMMARY_DATA.to_csv(output_dir + '/snp_final_summary.txt', sep='\t', index=False)
 
-    TAB_DATA = pd.concat([CHROM, POS, TYPE, REF, ALT, SUPPORT], axis=1)
-
-    VARIANT_TYPES = pd.Series(['SNP', 'DEL', 'INS', 'MNP', 'COMPLEX','TOTAL'], name = 'TYPE')
-    VARIANT_DATA = pd.Series([(TYPE=='snp').sum(), (TYPE=='del').sum(), (TYPE=='ins').sum(), (TYPE=='mnp').sum(), (TYPE=='complex').sum(), len(TYPE)], name = 'COUNT')
-    SUMMARY_DATA = pd.concat([VARIANT_TYPES, VARIANT_DATA], axis=1)
-
-    TAB_DATA.to_csv(output_dir + '/snp_final.csv', index=False)
-    TAB_DATA.to_csv(output_dir + '/snp_final.tab', sep='\t', index=False)
-    SUMMARY_DATA.to_csv(output_dir + '/snp_final_summary.txt', sep='\t', index=False)
 
 def generate_tab_csv_sv_summary(vcf, output_dir):
     CHROM = vcf.iloc[:,0]

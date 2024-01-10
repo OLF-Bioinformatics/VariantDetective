@@ -173,82 +173,158 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     # Combine Variants
     print(str(datetime.datetime.now().replace(microsecond=0)) + '\tCombining variants...', file=output)
-    command = 'vcf-isec -p ' + snp_indel_outdir + '/snp_ ' + \
-        freebayes_outdir + '/freebayes.filt.vcf.gz ' + \
-        haplotypecaller_outdir + '/haplotypecaller.filt.vcf.gz ' + \
-        clair3_outdir + '/clair3.filt.vcf.gz'
-    run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_0_1.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_0_1.vcf.gz'
-        run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_0_2.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_0_2.vcf.gz'
-        run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_1_2.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_1_2.vcf.gz'
-        run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_0.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_0.vcf.gz'
-        run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_1.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_1.vcf.gz'
-        run_process(command)
-    if not os.path.exists(snp_indel_outdir + '/snp_2.vcf.gz'):
-        command = 'zgrep "#" ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz | bgzip -c > ' + \
-            snp_indel_outdir + '/snp_2.vcf.gz'
+    def has_variants(vcf_file):
+        """Check if a VCF file has variants."""
+        command = f"zcat {vcf_file} | grep -v '#' | wc -l"
+        try:
+            result = subprocess.check_output(command, shell=True, universal_newlines=True).strip()
+            return int(result) > 0
+        except subprocess.CalledProcessError as e:
+            print("Error:", e)
+            return False
+
+    def create_vcf_if_not_exists(source_file, dest_file, snp_indel_outdir):
+        if not os.path.exists(dest_file):
+            command = 'zgrep "#" ' + source_file + ' | bgzip -c > ' + snp_indel_outdir + '/' + dest_file
+            run_process(command)
+    
+    def run_tabix(vcf_file, snp_indel_outdir):
+        command = 'tabix -p vcf ' + snp_indel_outdir + '/' + vcf_file
         run_process(command)
 
-    command = 'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_0_1.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_0_2.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_1_2.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_0.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_1.vcf.gz && ' + \
-        'tabix -p vcf ' + snp_indel_outdir + '/snp_2.vcf.gz' 
-    run_process(command)
+    vcf_files = [
+        freebayes_outdir + '/freebayes.filt.vcf.gz',
+        haplotypecaller_outdir + '/haplotypecaller.filt.vcf.gz',
+        clair3_outdir + '/clair3.filt.vcf.gz'
+    ]
     
-    if args.snp_consensus == 3:
-        command = 'gunzip -c ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz > ' + \
-            snp_indel_outdir + '/snp_final.vcf' 
-        run_process(command)
-    elif args.snp_consensus == 2:
-        command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
-            snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
-            snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
-            snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
-            '-o ' + snp_indel_outdir + '/snp_final.vcf'
-        run_process(command)
-    elif args.snp_consensus == 1:
-        command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
-            snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
-            snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
-            snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
-            snp_indel_outdir + '/snp_0.vcf.gz ' + \
-            snp_indel_outdir + '/snp_1.vcf.gz ' + \
-            snp_indel_outdir + '/snp_2.vcf.gz ' + \
-            '-o ' + snp_indel_outdir + '/snp_final.vcf'
+    # Filter out files with no variants
+    valid_vcf_files = [file for file in vcf_files if has_variants(file)]
+
+    if len(valid_vcf_files) > 0:
+        command = 'vcf-isec -p ' + snp_indel_outdir + '/snp_ ' + ' '.join(valid_vcf_files)
         run_process(command)
         
-    command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + \
-        snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + \
-        snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + \
-        snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
-        snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
-        snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
-        snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
-        'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
-        snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
-        'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
-    run_process(command)
+        if len(valid_vcf_files) == 3:
+            source_vcf = 'snp_0_1_2.vcf.gz'
+            dest_vcfs = ['snp_0_1.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
+                        'snp_0.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
+            run_tabix(source_vcf, snp_indel_outdir)
+            for dest_vcf in dest_vcfs:
+                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
+                run_tabix(dest_vcf, snp_indel_outdir)
+
+        elif len(valid_vcf_files) == 2:
+            source_vcf = 'snp_0_1.vcf.gz'
+            dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
+                        'snp_0.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
+            run_tabix(source_vcf, snp_indel_outdir)
+            for dest_vcf in dest_vcfs:
+                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
+                run_tabix(dest_vcf, snp_indel_outdir)
+                
+        elif len(valid_vcf_files) == 1:
+            source_vcf = 'snp_0.vcf.gz'
+            dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_1.vcf.gz', 'snp_0_2.vcf.gz',
+                        'snp_1_2.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
+            run_tabix(source_vcf, snp_indel_outdir)
+            for dest_vcf in dest_vcfs:
+                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
+                run_tabix(dest_vcf, snp_indel_outdir)
+
+        if args.snp_consensus == 3:
+            command = 'gunzip -c ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz > ' + \
+                snp_indel_outdir + '/snp_final.vcf' 
+            run_process(command)
+        elif args.snp_consensus == 2:
+            command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
+                snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
+                snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
+                snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
+                '-o ' + snp_indel_outdir + '/snp_final.vcf'
+            run_process(command)
+        elif args.snp_consensus == 1:
+            command = 'bcftools concat -a ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + \
+                snp_indel_outdir + '/snp_0_1.vcf.gz ' + \
+                snp_indel_outdir + '/snp_0_2.vcf.gz ' + \
+                snp_indel_outdir + '/snp_1_2.vcf.gz ' + \
+                snp_indel_outdir + '/snp_0.vcf.gz ' + \
+                snp_indel_outdir + '/snp_1.vcf.gz ' + \
+                snp_indel_outdir + '/snp_2.vcf.gz ' + \
+                '-o ' + snp_indel_outdir + '/snp_final.vcf'
+            run_process(command)
+
+        if len(valid_vcf_files) == 3:    
+            command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+            run_process(command)
+        elif len(valid_vcf_files) == 2:
+            missing_vcf = list(set(vcf_files) - set(valid_vcf_files))
+            if freebayes_outdir + '/freebayes.filt.vcf.gz' in missing_vcf:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+            elif haplotypecaller_outdir + '/haplotypecaller.filt.vcf.gz' in missing_vcf:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+            elif clair3_outdir + '/clair3.filt.vcf.gz'in missing_vcf:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+        elif len(valid_vcf_files) == 1:
+            if freebayes_outdir + '/freebayes.filt.vcf.gz' in valid_vcf_files:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+            elif haplotypecaller_outdir + '/haplotypecaller.filt.vcf.gz' in valid_vcf_files:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+            elif clair3_outdir + '/clair3.filt.vcf.gz'in valid_vcf_files:
+                command = 'mv ' + snp_indel_outdir + '/snp_0.vcf.gz ' + snp_indel_outdir + '/clair3.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1.vcf.gz ' + snp_indel_outdir + '/freebayes.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.unique.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1.vcf.gz ' + snp_indel_outdir + '/freebayes.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.vcf.gz ; ' + \
+                    'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
+                    'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
+        run_process(command)
+
+    else:
+        command = 'gunzip -c ' + vcf_files[0] + ' > ' + snp_indel_outdir + '/snp_final.vcf' 
+        run_process(command)
     
     generate_tab_csv_snp_summary(read_vcf(snp_indel_outdir + '/snp_final.vcf'), snp_indel_outdir)
