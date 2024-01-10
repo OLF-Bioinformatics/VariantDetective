@@ -258,7 +258,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
                     'mv ' + snp_indel_outdir + '/snp_1_2.vcf.gz ' + snp_indel_outdir + '/haplotypecaller.clair3.vcf.gz ; ' + \
                     'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
                     'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
-            run_process(command)
         elif len(valid_vcf_files) == 2:
             missing_vcf = list(set(vcf_files) - set(valid_vcf_files))
             if freebayes_outdir + '/freebayes.filt.vcf.gz' in missing_vcf:
