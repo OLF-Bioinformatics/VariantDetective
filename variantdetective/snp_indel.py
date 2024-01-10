@@ -185,7 +185,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
 
     def create_vcf_if_not_exists(source_file, dest_file, snp_indel_outdir):
         if not os.path.exists(dest_file):
-            command = f'zcat {source_file} | grep "#" | bgzip -c > {snp_indel_outdir}/{dest_file}'
+            command = f"zcat {snp_indel_outdir}/{source_file} | grep '#' | bgzip -c > {snp_indel_outdir}/{dest_file}"
             run_process(command)
     
     def run_tabix(vcf_file, snp_indel_outdir):
@@ -317,7 +317,6 @@ def snp_indel(args, snp_input, output=sys.stderr):
                     'mv ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz ' + snp_indel_outdir + '/freebayes.haplotypecaller.clair3.vcf.gz ; ' + \
                     'rm ' + snp_indel_outdir + '/*.tbi ' + snp_indel_outdir + '/snp__README'
         run_process(command)
-
     else:
         command = 'gunzip -c ' + vcf_files[0] + ' > ' + snp_indel_outdir + '/snp_final.vcf' 
         run_process(command)
