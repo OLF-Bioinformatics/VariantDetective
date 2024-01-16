@@ -1,10 +1,2 @@
-*.fasta*
-*.fa*
-*.fsa*
-*.fastq*
-*.fq*
-*.fna*
-tmp*/
 __pycache__/
-todo.txt
 recipe/
