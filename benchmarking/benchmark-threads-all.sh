@@ -14,7 +14,6 @@ do
     	-o $dir/sim_$i
     end=`date +%s%N`
     rm -r $dir/sim_$i*
-
     echo `expr $end - $start` >> $dir/results-$dir-$j.txt
   done
 done

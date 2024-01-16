@@ -11,7 +11,7 @@ do
     	-g $dir/sim_$i.fasta \
     	-r GCA_000011705.1.fa \
     	-t 24 \
-        --readcov $j \
+      --readcov $j \
     	-o $dir/sim_$i
     end=`date +%s%N`
     rm -r $dir/sim_$i*
