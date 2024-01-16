@@ -51,6 +51,20 @@ conda activate vd
 conda install -c bioconda -c conda-forge -c charronp variantdetective
 ```
 
+## Test Data
+After successfully installing VariantDetective, you can verify its functionality
+running test data. This step ensures that the isntallation has been completed 
+correctly and the project is functioning as expected.
+
+From within the VariantDetective directory, the test can be run using the following command:
+
+```
+variantdetective all_variants -r testdata/testdata_ref.fasta -g testdata/testdata_mut.fasta -o testdata/test
+```
+
+Once the tool is done, check the output. Compare the `testdata/test/snp_indel/snp_final.vcf` file with `testdata/testdata_snp.vcf`
+and the `testdata/test/structural_variant/combined_sv.vcf` file with `testdata/testdata_sv.vcf`.
+
 ## Quick Usage
 
 **Find snps/indels and structural variants from an assembled genome (FASTA)**

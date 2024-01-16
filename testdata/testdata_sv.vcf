@@ -1,0 +1,23 @@
+##fileformat=VCFv4.2
+##source=Sniffles
+##fileDate=20240116
+##contig=<ID=testdata_ref,length=105622>
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=INVDUP,Description="InvertedDUP with unknown boundaries">
+##ALT=<ID=TRA,Description="Translocation">
+##ALT=<ID=INS,Description="Insertion">
+##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for END coordinate in case of a translocation">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the structural variant">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Length of the SV">
+##INFO=<ID=SVMETHOD,Number=1,Type=String,Description="Type of approach used to detect SV">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=AF,Number=.,Type=Integer,Description="Allele Frequency.">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT
+testdata_ref	82364	DEL0SURVIVOR	N	<DEL>	.	LowQual	PRECISE;SVTYPE=DEL;SVMETHOD=SURVIVOR_sim;CHR2=testdata_ref;END=85015;SVLEN=2651	GT:GL:GQ:FT:RC:DR:DV:RR:RV	1/1
+testdata_ref	4723	INS1SURVIVOR	N	<INS>	.	LowQual	PRECISE;SVTYPE=INS;SVMETHOD=SURVIVOR_sim;CHR2=testdata_ref;END=7492;SVLEN=2769	GT:GL:GQ:FT:RC:DR:DV:RR:RV	1/1
+testdata_ref	9901	INS2SURVIVOR	N	<INS>	.	LowQual	PRECISE;SVTYPE=INS;SVMETHOD=SURVIVOR_sim;CHR2=testdata_ref;END=12754;SVLEN=2853	GT:GL:GQ:FT:RC:DR:DV:RR:RV	1/1
+testdata_ref	39769	DEL3SURVIVOR	N	<DEL>	.	LowQual	PRECISE;SVTYPE=DEL;SVMETHOD=SURVIVOR_sim;CHR2=testdata_ref;END=44753;SVLEN=4984	GT:GL:GQ:FT:RC:DR:DV:RR:RV	1/1
+testdata_ref	81152	INV4SURVIVOR	N	<INV>	.	LowQual	PRECISE;SVTYPE=INV;SVMETHOD=SURVIVOR_sim;CHR2=testdata_ref;END=81781;SVLEN=629	GT:GL:GQ:FT:RC:DR:DV:RR:RV	1/1
