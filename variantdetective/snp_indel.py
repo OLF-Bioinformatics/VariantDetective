@@ -66,6 +66,10 @@ def snp_indel(args, snp_input, output=sys.stderr):
         rgpl = 'ONT'
 
     # Run Picard 
+    reference_base = os.path.splitext(reference)[0]
+    dict_file = reference_base + ".dict"
+    if os.path.exists(dict_file):
+        os.remove(dict_file)
     command = 'picard CreateSequenceDictionary R=' + reference
     run_process(command)
     command = 'picard AddOrReplaceReadGroups I=' + bam_file_dir + '/alignment.sorted.bam O=' + \
@@ -156,7 +160,7 @@ def snp_indel(args, snp_input, output=sys.stderr):
     command = 'mv ' + clair3_outdir + '/merge_output.vcf.gz ' + clair3_outdir + '/clair3.vcf.gz'
     run_process(command)
 
-    command = 'gunzip ' + clair3_outdir + '/clair3.vcf.gz'
+    command = 'gunzip -f ' + clair3_outdir + '/clair3.vcf.gz'
     run_process(command)
 
     command = 'vcffilter -f "QUAL > ' + str(args.minqual_snp) + ' & FILTER = PASS" ' + clair3_outdir + '/clair3.vcf > ' + \

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='variantdetective',
-      version='1.0.0',
+      version='1.0.1',
       description='VariantDetective: an accurate all-in-one pipeline for detecting consensus bacterial SNPs and SVs',
       url='https://github.com/OLF-Bioinformatics/VariantDetective',
       author='Phil Charron', 
