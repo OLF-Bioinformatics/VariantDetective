@@ -216,4 +216,8 @@ If you have any issues installing or running VariantDetective, or would like a n
 
 ## Citing VariantDetective
 
-Our manuscript describing this tool is currently under review.
+The manuscript describing this tool is available [here](https://academic.oup.com/bioinformatics/article/40/2/btae066/7609103).
+
+The tool should be cited as follows:
+
+> Philippe Charron, Mingsong Kang, "VariantDetective: An Accurate All-in-One Pipeline for Detecting Consensus Bacterial SNPs and SVs," Bioinformatics, Vol. 40, No. 2, February 2024, btae066, https://doi.org/10.1093/bioinformatics/btae066.
