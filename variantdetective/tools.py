@@ -138,37 +138,46 @@ def generate_tab_csv_snp_summary(vcf, output_dir):
 
 
 def generate_tab_csv_sv_summary(vcf, output_dir):
-    CHROM = vcf.iloc[:,0]
-    CHROM.name = 'REF_CHROM'
-    START = vcf.iloc[:,1]
-    START.name = 'REF_START'
-    END = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,6].str[4:]
-    END.name = 'REF_STOP'
-    SIZE = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,2].str[6:]
-    SIZE.name = 'SIZE'
-    TYPE = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,3].str[7:]
-    TYPE.name = 'TYPE'
-    INFO = vcf.iloc[:,4].copy()
-    INFO.name = 'INFO'
-    for i, v in INFO.items():
-        if (TYPE[i] == "TRA"):
-            if ("]" not in v and "[" not in v):
-                INFO[i] = ''
-            elif ("]" in v):
-                INFO[i] = ']'+(v.split(']'))[1].split(']')[0]+']'
-            elif ("[" in v):
-                INFO[i] = '['+(v.split('['))[1].split('[')[0]+'['
+    if len(vcf) > 0:
+        CHROM = vcf.iloc[:,0]
+        CHROM.name = 'REF_CHROM'
+        START = vcf.iloc[:,1]
+        START.name = 'REF_START'
+        END = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,6].str[4:]
+        END.name = 'REF_STOP'
+        SIZE = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,2].str[6:]
+        SIZE.name = 'SIZE'
+        TYPE = vcf.iloc[:,7].str.split(';', expand=True).iloc[:,3].str[7:]
+        TYPE.name = 'TYPE'
+        INFO = vcf.iloc[:,4].copy()
+        INFO.name = 'INFO'
+        for i, v in INFO.items():
+            if (TYPE[i] == "TRA"):
+                if ("]" not in v and "[" not in v):
+                    INFO[i] = ''
+                elif ("]" in v):
+                    INFO[i] = ']'+(v.split(']'))[1].split(']')[0]+']'
+                elif ("[" in v):
+                    INFO[i] = '['+(v.split('['))[1].split('[')[0]+'['
+                else:
+                    INFO[i] = ''
             else:
                 INFO[i] = ''
-        else:
-            INFO[i] = ''
 
-    TAB_DATA = pd.concat([CHROM, START, END, SIZE, TYPE, INFO], axis=1)
-
-    VARIANT_TYPES = pd.Series(['TRANSLOCATION', 'INVERSION', 'DELETION', 'INSERTION', 'DUPLICATION','TOTAL'], name = 'TYPE')
-    VARIANT_DATA = pd.Series([(TYPE=='TRA').sum(), (TYPE=='INV').sum(), (TYPE=='DEL').sum(), (TYPE=='INS').sum(), (TYPE=='DUP').sum(), len(TYPE)], name = 'COUNT')
-    SUMMARY_DATA = pd.concat([VARIANT_TYPES, VARIANT_DATA], axis=1)
-    
-    TAB_DATA.to_csv(output_dir + '/combined_sv.csv', index=False)
-    TAB_DATA.to_csv(output_dir + '/combined_sv.tab', sep='\t', index=False)
-    SUMMARY_DATA.to_csv(output_dir + '/combined_sv_summary.txt', sep='\t', index=False)
+        TAB_DATA = pd.concat([CHROM, START, END, SIZE, TYPE, INFO], axis=1)
+        VARIANT_TYPES = pd.Series(['TRANSLOCATION', 'INVERSION', 'DELETION', 'INSERTION', 'DUPLICATION','TOTAL'], name = 'TYPE')
+        VARIANT_DATA = pd.Series([(TYPE=='TRA').sum(), (TYPE=='INV').sum(), (TYPE=='DEL').sum(), (TYPE=='INS').sum(), (TYPE=='DUP').sum(), len(TYPE)], name = 'COUNT')
+        SUMMARY_DATA = pd.concat([VARIANT_TYPES, VARIANT_DATA], axis=1)
+        TAB_DATA.to_csv(output_dir + '/combined_sv.csv', index=False)
+        TAB_DATA.to_csv(output_dir + '/combined_sv.tab', sep='\t', index=False)
+        SUMMARY_DATA.to_csv(output_dir + '/combined_sv_summary.txt', sep='\t', index=False)
+    else:
+        column_names_str= "REF_CHROM REF_START REF_STOP SIZE TYPE INFO"
+        column_names = column_names_str.split()
+        TAB_DATA = pd.DataFrame(columns=column_names)
+        TAB_DATA.to_csv(output_dir + '/combined_sv.csv', index=False)
+        TAB_DATA.to_csv(output_dir + '/combined_sv.tab', sep='\t', index=False)
+        data = {"TYPE": ["TRANSLOCATION", "INVERSION", "DELETION", "INSERTION", "DUPLICATION","TOTAL"],
+                "COUNT": [0, 0, 0, 0, 0, 0]}
+        SUMMARY_DATA = pd.DataFrame(data)
+        SUMMARY_DATA.to_csv(output_dir + '/combined_sv_summary.txt', sep='\t', index=False)
