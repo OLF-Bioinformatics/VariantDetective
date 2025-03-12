@@ -187,13 +187,26 @@ def snp_indel(args, snp_input, output=sys.stderr):
             print("Error:", e)
             return False
 
+    def get_child_vcf_files(snp_indel_outdir):
+        return [file for file in os.listdir(snp_indel_outdir) if file.startswith('snp_') and file.endswith('.vcf.gz')]
+    
+    def rm_existing_child_vcf_files(child_vcf_files, snp_indel_outdir):
+        if len(child_vcf_files) > 0:
+            print(
+                str(datetime.datetime.now().replace(microsecond=0)) + '\t' +
+                'Existing vcf-isec child VCF files found. Removing them to avoid conflicts: ' + ', '.join(child_vcf_files),
+                file = output
+            )
+            command = 'rm ' + snp_indel_outdir + '/snp_*.vcf.gz'
+            run_process(command)
+
     def create_vcf_if_not_exists(source_file, dest_file, snp_indel_outdir):
-        if not os.path.exists(dest_file):
+        if not os.path.exists(os.path.join(snp_indel_outdir, dest_file)):
             command = f"zcat {snp_indel_outdir}/{source_file} | grep '#' | bgzip -c > {snp_indel_outdir}/{dest_file}"
             run_process(command)
-    
+
     def run_tabix(vcf_file, snp_indel_outdir):
-        command = 'tabix -p vcf ' + snp_indel_outdir + '/' + vcf_file
+        command = 'tabix -fp vcf ' + snp_indel_outdir + '/' + vcf_file
         run_process(command)
 
     vcf_files = [
@@ -206,32 +219,26 @@ def snp_indel(args, snp_input, output=sys.stderr):
     valid_vcf_files = [file for file in vcf_files if has_variants(file)]
 
     if len(valid_vcf_files) > 0:
+        rm_existing_child_vcf_files(get_child_vcf_files(snp_indel_outdir), snp_indel_outdir)
         command = 'vcf-isec -p ' + snp_indel_outdir + '/snp_ ' + ' '.join(valid_vcf_files)
         run_process(command)
-        if len(valid_vcf_files) == 3:
-            source_vcf = 'snp_0_1_2.vcf.gz'
-            dest_vcfs = ['snp_0_1.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
-                        'snp_0.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
-            run_tabix(source_vcf, snp_indel_outdir)
-            for dest_vcf in dest_vcfs:
-                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
-                run_tabix(dest_vcf, snp_indel_outdir)
-        elif len(valid_vcf_files) == 2:
-            source_vcf = 'snp_0_1.vcf.gz'
-            dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_2.vcf.gz', 'snp_1_2.vcf.gz',
-                        'snp_0.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
-            run_tabix(source_vcf, snp_indel_outdir)
-            for dest_vcf in dest_vcfs:
-                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
-                run_tabix(dest_vcf, snp_indel_outdir) 
-        elif len(valid_vcf_files) == 1:
-            source_vcf = 'snp_0.vcf.gz'
-            dest_vcfs = ['snp_0_1_2.vcf.gz', 'snp_0_1.vcf.gz', 'snp_0_2.vcf.gz',
-                        'snp_1_2.vcf.gz', 'snp_1.vcf.gz', 'snp_2.vcf.gz']
-            run_tabix(source_vcf, snp_indel_outdir)
-            for dest_vcf in dest_vcfs:
-                create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
-                run_tabix(dest_vcf, snp_indel_outdir)
+        child_vcf_files = get_child_vcf_files(snp_indel_outdir)
+        # Use the first child VCF file as the source VCF to populate the '#'
+        # fields of empty VCF files
+        source_vcf = child_vcf_files[0]
+        run_tabix(source_vcf, snp_indel_outdir)
+        dest_vcfs = [
+            'snp_0_1_2.vcf.gz',
+            'snp_0_1.vcf.gz',
+            'snp_0_2.vcf.gz',
+            'snp_1_2.vcf.gz',
+            'snp_0.vcf.gz',
+            'snp_1.vcf.gz',
+            'snp_2.vcf.gz'
+        ]
+        for dest_vcf in dest_vcfs:
+            create_vcf_if_not_exists(source_vcf, dest_vcf, snp_indel_outdir)
+            run_tabix(dest_vcf, snp_indel_outdir)        
         if args.snp_consensus == 3:
             command = 'gunzip -c ' + snp_indel_outdir + '/snp_0_1_2.vcf.gz > ' + \
                 snp_indel_outdir + '/snp_final.vcf' 
